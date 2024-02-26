@@ -1,7 +1,11 @@
 
 const express =require('express');
 const app = express();
-const port = process.env.PORT || 5000;
+const port = process.env.PORT || 5500;
+const helmet = require('helmet');
+
+//adding helmet middleware
+app.use(helmet());
 
 //handlebars
 const engineHandleBars  = require ('express-handlebars');
@@ -34,6 +38,7 @@ app.get('/:page',(req,res)=>{
 app.get('/',(req,res)=>{
     res.send('Hello world');
 });
+
 //start web server;
 app.listen(port,()=>{
     console.log(`server is listening on port ${port}`);
