@@ -24,27 +24,16 @@ app.engine('hbs',engineHandleBars.engine({
 }));
 app.set('view engine','hbs');
 
-
-
 //route
-app.get('/createUser',(req,res)=>{
-    let models = require('./models');
-    models.sequelize.sync().then(()=>{
-        res.send('create user!!!')
-    })
+app.use('/',require('./routes/indexRouter'));
+
+//error
+app.use((req,res,next)=>{
+    res.status(404).send('page not found');
 });
-
-
-app.get('/',(req,res)=>{
-    res.render('index');
-});
-
-app.get('/:page',(req,res)=>{
-    res.render(req.params.page);
-});
-
-app.get('/',(req,res)=>{
-    res.send('Hello world');
+app.use((error,req,res,next)=>{
+    console.error(error);
+    res.status(500).send('internal server');
 });
 
 //start web server;
