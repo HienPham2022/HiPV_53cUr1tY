@@ -27,6 +27,14 @@ app.set('view engine','hbs');
 
 
 //route
+app.get('/createUser',(req,res)=>{
+    let models = require('./models');
+    models.sequelize.sync().then(()=>{
+        res.send('create user!!!')
+    })
+});
+
+
 app.get('/',(req,res)=>{
     res.render('index');
 });
