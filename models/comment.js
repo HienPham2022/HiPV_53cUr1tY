@@ -11,13 +11,14 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
-      Comment.belongsTo(models.User,{foreignKey:"userID"});
     }
   }
   Comment.init({
-    content: DataTypes.STRING,
-    vote: DataTypes.DECIMAL,
-    time: DataTypes.DATE
+    username: DataTypes.STRING,
+    email: DataTypes.STRING,
+    urlweb: DataTypes.STRING,
+    content: DataTypes.TEXT,
+    timeStemp:DataTypes.DATE,
   }, {
     sequelize,
     modelName: 'Comment',

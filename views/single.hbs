@@ -42,33 +42,18 @@
                 </div>
 
                 <div class="mb-5">
-                    <h4 class="mb-4">3 Comments</h4>
+                    
+                    <h4 class="mb-4">{{comments.length}} Comments</h4>
+                    {{#each comments}}
                     <div class="media mb-4">
                         <img src="img/user.jpg" alt="Image" class="img-thumbnail p-2 mr-3 mt-1" style="width:60px;">
                         <div class="media-body">
-                            <h6>John Doe <small><i>01 Jan 2045 at 12:00pm</i></small></h6>
-                            <p>Diam amet duo labore stet elitr invidunt ea clita ipsum voluptua, tempor labore accusam ipsum et no at. Kasd diam tempor rebum magna dolores sed sed eirmod ipsum. Gubergren clita aliquyam consetetur sadipscing, at tempor amet ipsum diam tempor consetetur at sit.</p>
+                            <h6>{{username}} <small><i>{{timeStemp}}</i></small></h6>
+                            <p>{{content}}</p>
                             <button class="btn btn-sm btn-dark">Reply</button>
                         </div>
                     </div>
-                    <div class="media mb-4">
-                        <img src="img/user.jpg" alt="Image" class="img-thumbnail p-2 mr-3 mt-1"
-                            style="width:60px;">
-                        <div class="media-body">
-                            <h6>John Doe <small><i>01 Jan 2045 at 12:00pm</i></small></h6>
-                            <p>Diam amet duo labore stet elitr invidunt ea clita ipsum voluptua, tempor labore accusam ipsum et no at. Kasd diam tempor rebum magna dolores sed sed eirmod ipsum. Gubergren clita aliquyam consetetur sadipscing, at tempor amet ipsum diam tempor consetetur at sit.</p>
-                            <button class="btn btn-sm btn-dark">Reply</button>
-                            <div class="media mt-4">
-                                <img src="img/user.jpg" alt="Image" class="img-thumbnail p-2 mr-3 mt-1"
-                                    style="width:60px;">
-                                <div class="media-body">
-                                    <h6>John Doe <small><i>01 Jan 2045 at 12:00pm</i></small></h6>
-                                    <p>Diam amet duo labore stet elitr invidunt ea clita ipsum voluptua, tempor labore accusam ipsum et no at. Kasd diam tempor rebum magna dolores sed sed eirmod ipsum. Gubergren clita aliquyam consetetur sadipscing, at tempor amet ipsum diam tempor consetetur at sit.</p>
-                                    <button class="btn btn-sm btn-dark">Reply</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                    {{/each}}
                 </div>
 
                 <div style="padding: 30px; background: #f6f6f6;">

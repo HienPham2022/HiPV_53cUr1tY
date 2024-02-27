@@ -4,7 +4,7 @@ const express = require ('express');
 const router = express.Router();
 const controller = require('../controller/indexcontroller')
 
-//route
+//create data for database
 router.get('/createUser',(req,res)=>{
     let models = require('../models');
     models.sequelize.sync().then(()=>{
@@ -12,11 +12,15 @@ router.get('/createUser',(req,res)=>{
     })
 });
 
-
+//route
 router.get('/',controller.showHomePage);
 
-router.get('/:page',controller.showPage);
-
-
+//show pages
+router.get('/:page', (req,res,next) =>{
+    const pages = ['index','blog'];
+    if(pages.includes(req.params.page))
+         res.render(req.params.page);
+    next();
+});
 
 module.exports = router;

@@ -1,11 +1,11 @@
 
 const express =require('express');
 const app = express();
-const port = process.env.PORT || 5500;
+const port = process.env.PORT || 5000;
 const helmet = require('helmet');
 
 //adding helmet middleware
-app.use(helmet());
+// app.use(helmet());
 
 //handlebars
 const engineHandleBars  = require ('express-handlebars');
@@ -20,12 +20,17 @@ app.engine('hbs',engineHandleBars.engine({
     layoutsDir: __dirname + '/views/layouts',
     partialsDir: __dirname + '/views/partials',
     extname: 'hbs',
-    defaultLayout: 'layout'
+    defaultLayout: 'layout',
+    runtimeOptions: {
+        allowProtoPropertiesByDefault:true
+    },
 }));
 app.set('view engine','hbs');
 
 //route
 app.use('/',require('./routes/indexRouter'));
+
+app.use('/single',require('./routes/commentsRouter'))
 
 //error
 app.use((req,res,next)=>{
