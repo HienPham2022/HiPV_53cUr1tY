@@ -16,11 +16,11 @@ router.get('/createUser',(req,res)=>{
 router.get('/',controller.showHomePage);
 
 //show pages
-router.get('/:page', (req,res,next) =>{
-    const pages = ['index','blog'];
-    if(pages.includes(req.params.page))
-         res.render(req.params.page);
-    next();
-});
+// router.get('/:page', (req,res) =>{
+//     const pages = ['index','blog'];
+//     if(pages.includes(req.params.page))
+//          res.render(req.params.page);
+
+// });
 
 module.exports = router;
