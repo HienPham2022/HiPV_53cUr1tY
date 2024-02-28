@@ -1,7 +1,7 @@
 
 const express =require('express');
 const app = express();
-const port = process.env.PORT || 5000;
+const port = process.env.PORT || 5555;
 const helmet = require('helmet');
 
 //adding helmet middleware
@@ -26,6 +26,11 @@ app.engine('hbs',engineHandleBars.engine({
     },
 }));
 app.set('view engine','hbs');
+
+//post method
+
+app.use(express.json);
+app.use(express.urlencoded({extended:false}));
 
 //route
 app.use('/',require('./routes/indexRouter'));
