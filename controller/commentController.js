@@ -1,4 +1,5 @@
 let controller = {};
+const e = require('express');
 const models = require('../models');
 
 controller.showComment = async (req,res) =>{
@@ -10,19 +11,19 @@ controller.showComment = async (req,res) =>{
 
 //postcommnet
 controller.postComment = async (req, res) => {
-    const { username, email, urlweb, content } = req.body;
+    const { name, email, website, message } = req.body;
 
     try {
         const comments = await models.Comment.create({
-            username,
-            email,
-            urlweb,
-            content,
+            username:name,
+            email:email,
+            urlweb:website,
+            content:message,
             timeStemp: new Date(),
         });
 
         // Sending success response
-        res.redirect(req.get('/single'));
+        res.redirect('/single');
     } catch (err) {
         console.log('Error: ', err);
         // Sending error response
