@@ -35,7 +35,7 @@ app.use(bodyParser.urlencoded({extended:true}));
 //route
 app.use('/',require('./routes/indexRouter'));
 
-app.use('/single',require('./routes/commentsRouter'))
+app.use('/single',require('./routes/commentsRouter'));
 
 
 

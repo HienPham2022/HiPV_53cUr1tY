@@ -30,6 +30,26 @@ controller.postComment = async (req, res) => {
         res.status(500).send('Something went wrong, please try again');
     }
 };
+
+//delete comment
+controller.deleteComment = async (req, res) => {
+    try {
+        // Delete all comments from the database
+        await models.Comment.destroy({
+            where: {}, // Delete all rows
+            truncate: true 
+        });
+
+        // Send success response
+        // res.status(200).send('All comments deleted successfully');
+        res.redirect('/');
+    } catch (err) {
+        console.log('Error: ', err);
+        // Send error response
+        res.status(500).send('Something went wrong, please try again');
+    }
+};
+
  
 
 
