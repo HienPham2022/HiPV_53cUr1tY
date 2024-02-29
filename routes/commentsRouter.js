@@ -8,6 +8,8 @@ const { route } = require('./indexRouter');
 //route comment
 router.get('/',controller.showComment);
 
-//post comment
-router.post('/postcomment',controller.postComment);
+//post
+router.post('/comments', controller.postComment);
+
+
 module.exports = router;

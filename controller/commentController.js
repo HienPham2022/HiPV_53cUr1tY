@@ -1,4 +1,5 @@
 let controller = {};
+const e = require('express');
 const models = require('../models');
 
 controller.showComment = async (req,res) =>{
@@ -8,23 +9,28 @@ controller.showComment = async (req,res) =>{
 
 };
 
-//add comment
+//postcommnet
 controller.postComment = async (req, res) => {
-    const { name, email, urlPath, content } = req.body;
+    const { name, email, website, message } = req.body;
+
     try {
-        const newComment = await models.Comment.create({
-            name: name,
-            email: email,
-            urlweb: urlPath,
-            content: content,
-            timeStemp: Sequelize.literal('NOW()') // Sử dụng Sequelize.literal để chèn giá trị hiện tại của timestamp
+        const comments = await models.Comment.create({
+            username:name,
+            email:email,
+            urlweb:website,
+            content:message,
+            timeStemp: new Date(),
         });
-        res.status(201).json({ success: true, comment: newComment });
-    } catch (error) {
-        console.error('Error creating comment:', error);
-        res.status(500).json({ success: false, error: error.message });
+
+        // Sending success response
+        res.redirect('/single');
+    } catch (err) {
+        console.log('Error: ', err);
+        // Sending error response
+        res.status(500).send('Something went wrong, please try again');
     }
 };
+ 
 
 
 module.exports = controller;
