@@ -1,10 +1,16 @@
 {
   "development": {
-    "username": "postgres",
-    "password": "hien815387",
-    "database": "webinfosec",
-    "host": "127.0.0.1",
-    "dialect": "postgres"
+    "username": "securitydb",
+    "password": "muINIyoJvFQmt02y5PvDRVXpXgrDkzYs",
+    "database": "securitydb_m4sn",
+    "host": "dpg-cnft9g8l6cac739khrcg-a.singapore-postgres.render.com",
+    "dialect": "postgres",
+    "dialectOptions": {
+      "ssl": {
+        "require": true,
+        "rejectUnauthorized": false
+      }
+    }
   },
   "test": {
     "username": "root",
@@ -14,10 +20,16 @@
     "dialect": "mysql"
   },
   "production": {
-    "username": "root",
-    "password": null,
-    "database": "database_production",
-    "host": "127.0.0.1",
-    "dialect": "mysql"
+    "username": "securitydb",
+    "password": "muINIyoJvFQmt02y5PvDRVXpXgrDkzYs",
+    "database": "securitydb_m4sn",
+    "host": "dpg-cnft9g8l6cac739khrcg-a.singapore-postgres.render.com",
+    "dialect": "postgres",
+    "dialectOptions": {
+      "ssl": {
+        "require": true,
+        "rejectUnauthorized": false
+      }
+    }
   }
 }
