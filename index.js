@@ -39,10 +39,12 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 //
 app.use(session({
-    secret: 'secret-key',
-    resave: false,
-    saveUninitialized: false
+    cookie: { httpOnly:true,maxAge:null},
+    secret:'Secret',
+    resave:false,
+    saveUninitialized:false
 }));
+
 app.use(sessionMiddleware);
 
 // Routes

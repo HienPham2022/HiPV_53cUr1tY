@@ -8,13 +8,6 @@ router.get('/login', userController.loginPage);
 
 router.post('/login', userController.login);
 
-// router.get('/single', (req, res) => {
-//     if (req.session.user) {
-//         res.render('single', { user: req.session.user });
-//     } else {
-//         res.redirect('/users/login');
-//     }
-// });
 
 router.get('/logout', userController.logout);
 

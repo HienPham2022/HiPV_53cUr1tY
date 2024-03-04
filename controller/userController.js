@@ -2,21 +2,39 @@ const { User } = require('../models');
 const bcrypt = require('bcryptjs');
 
 const userController = {};
+const sessionDuration = 24 * 60 * 60 * 1000;
+
 
 userController.loginPage = (req, res) => {
     res.render('login');
 };
 
+// userController.login = async (req, res) => {
+//     const { username, password } = req.body;
+//     const user = await userController.getUserByEmail(username);
+//     if (user && userController.comparePassword(password, user.password)) {
+//         req.session.user = user;
+//         res.redirect('single');
+//     } else {
+//         res.redirect('login');
+//     }
+// };
+
 userController.login = async (req, res) => {
     const { username, password } = req.body;
     const user = await userController.getUserByEmail(username);
     if (user && userController.comparePassword(password, user.password)) {
+        req.session.cookie.maxAge = sessionDuration;
         req.session.user = user;
         res.redirect('/single');
     } else {
-        res.redirect('login');
+        res.render('login', {
+            message: 'Incorrect Username or Password!',
+            type: 'alert-danger'
+        });
     }
 };
+
 
 userController.logout = (req, res) => {
     req.session.destroy();
@@ -31,13 +49,13 @@ userController.register = async (req, res) => {
     const { username, password } = req.body;
     try {
         const newUser = await userController.createUser({ username, password });
+        req.session.cookie.maxAge = sessionDuration;
         req.session.user = newUser;
         res.redirect('/single');
     } catch (error) {
         res.status(500).send('Registration failed');
     }
 };
-
 userController.getUserByEmail = (email) => {
     return User.findOne({
         where: { username: email }
