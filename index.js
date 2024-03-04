@@ -8,7 +8,7 @@ const session = require('express-session');
 const sessionMiddleware = require('./middlewares/sessionMiddleware');
 
 // Adding helmet middleware
-app.use(helmet());
+// app.use(helmet());
 
 // Handlebars
 const engineHandleBars = require('express-handlebars');
@@ -48,8 +48,8 @@ app.use(sessionMiddleware);
 // Routes
 app.use('/', require('./routes/indexRouter'));
 app.use('/single', require('./routes/commentsRouter'));
-app.use('/login', require('./routes/userRouter'));
-app.use('/logout', require('./routes/userRouter'));
+app.use('/users', require('./routes/userRouter'));
+
 // Error handling
 app.use((req, res, next) => {
     res.status(404).send('Page not found');

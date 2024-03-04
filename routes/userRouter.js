@@ -20,6 +20,6 @@ router.get('/logout', userController.logout);
 
 router.get('/register', userController.registerPage);
 
-router.post('/register', userController.registerPage);
+router.post('/register', userController.register);
 
 module.exports = router;
