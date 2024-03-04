@@ -8,7 +8,7 @@ const session = require('express-session');
 const sessionMiddleware = require('./middlewares/sessionMiddleware');
 
 // Adding helmet middleware
-// app.use(helmet());
+app.use(helmet());
 
 // Handlebars
 const engineHandleBars = require('express-handlebars');
@@ -39,7 +39,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 //
 app.use(session({
-    cookie: { httpOnly:true,maxAge:null},
+    cookie: { httpOnly:false,maxAge:null},
     secret:'Secret',
     resave:false,
     saveUninitialized:false

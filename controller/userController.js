@@ -72,4 +72,19 @@ userController.comparePassword = (password, hash) => {
     return bcrypt.compareSync(password, hash);
 };
 
+
+userController.deleteAllUsers = async (req, res) => {
+    try {
+        await User.destroy({
+            where: {},
+            truncate: true
+        });
+        req.session.destroy();
+        res.redirect('login');
+    } catch (error) {
+        res.status(500).send('Failed to delete all users');
+    }
+};
+
+
 module.exports = userController;
