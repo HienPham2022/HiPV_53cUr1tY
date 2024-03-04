@@ -8,7 +8,7 @@ const session = require('express-session');
 const sessionMiddleware = require('./middlewares/sessionMiddleware');
 
 // Adding helmet middleware
-app.use(helmet());
+// app.use(helmet());
 
 // Handlebars
 const engineHandleBars = require('express-handlebars');
