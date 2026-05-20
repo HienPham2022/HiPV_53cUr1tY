@@ -15,7 +15,12 @@ npm start
 
 | Biến | Mô tả |
 |------|--------|
-| `DATABASE_URL` | Chuỗi kết nối Supabase (URI) |
+| `DB_HOST` | Host pooler Supabase |
+| `DB_PORT` | Cổng (5432) |
+| `DB_DATABASE` | Tên database (`postgres`) |
+| `DB_USER` | User (`postgres.<project-ref>`) |
+| `DB_PASSWORD` | Mật khẩu database |
+| `DATABASE_URL` | (tuỳ chọn) URI — phải encode `.` trong user thành `%2E` |
 | `SESSION_SECRET` | Secret cho express-session |
 | `PORT` | Cổng server (mặc định 5555) |
 | `NODE_ENV` | `development` hoặc `production` |
@@ -26,20 +31,27 @@ npm start
 2. Thay `[YOUR-PASSWORD]` bằng mật khẩu database (không có dấu `[]`)
 3. Nếu mật khẩu có ký tự `@`, encode thành `%40` trong URI
 
-Ví dụ:
+**Lưu ý:** User Supabase dạng `postgres.xxx` có dấu chấm — nếu chỉ dùng `DATABASE_URL` không encode, Sequelize sẽ đọc nhầm user thành `postgres` và báo lỗi authentication.
+
+**Cách 1 (khuyến nghị)** — thêm từng biến trên Render:
 
 ```
-postgresql://postgres.hzooluqlxxqtnzlkdwbi:H13n815387%40@aws-1-ap-northeast-2.pooler.supabase.com:5432/postgres
+DB_HOST=aws-1-ap-northeast-2.pooler.supabase.com
+DB_PORT=5432
+DB_DATABASE=postgres
+DB_USER=postgres.hzooluqlxxqtnzlkdwbi
+DB_PASSWORD=<mật-khẩu-của-bạn>
+```
+
+**Cách 2** — chỉ dùng `DATABASE_URL` (encode dấu chấm + `@` trong mật khẩu):
+
+```
+postgresql://postgres%2Ehzooluqlxxqtnzlkdwbi:H13n815387%40@aws-1-ap-northeast-2.pooler.supabase.com:5432/postgres
 ```
 
 ### Render
 
-Trong **Environment** của Web Service, thêm:
-
-- **Key:** `DATABASE_URL`
-- **Value:** URI Supabase đã thay mật khẩu (giống `.env`)
-
-Thêm `SESSION_SECRET` và `NODE_ENV=production` nếu deploy production.
+Thêm các biến `DB_*` (hoặc `DATABASE_URL` đã encode đúng), cùng `SESSION_SECRET` và `NODE_ENV=production`.
 
 ## Đồng bộ bảng database
 

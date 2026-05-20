@@ -12,11 +12,18 @@ const db = {};
 
 const dbConfig = getSequelizeOptions();
 
-const sequelize = new Sequelize(dbConfig.connectionString, {
-    dialect: dbConfig.dialect,
-    dialectOptions: dbConfig.dialectOptions,
-    logging: dbConfig.logging
-});
+const sequelize = new Sequelize(
+    dbConfig.database,
+    dbConfig.username,
+    dbConfig.password,
+    {
+        host: dbConfig.host,
+        port: dbConfig.port,
+        dialect: dbConfig.dialect,
+        dialectOptions: dbConfig.dialectOptions,
+        logging: dbConfig.logging
+    }
+);
 
 fs.readdirSync(__dirname)
     .filter(file =>
