@@ -76,7 +76,17 @@ app.use((err, req, res, next) => {
     res.status(500).render('error', { code: 500, message: 'Lỗi máy chủ nội bộ' });
 });
 
-// Start server
-app.listen(port, () => {
-    console.log(`Server is listening on port ${port}`);
-});
+// Start server after DB check
+const { sequelize } = require('./models');
+
+sequelize.authenticate()
+    .then(() => {
+        console.log('Kết nối Supabase thành công!');
+        app.listen(port, () => {
+            console.log(`Server is listening on port ${port}`);
+        });
+    })
+    .catch((err) => {
+        console.error('Kết nối Supabase thất bại:', err.message);
+        process.exit(1);
+    });
