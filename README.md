@@ -29,7 +29,7 @@ npm start
 Ví dụ:
 
 ```
-postgresql://postgres:H13n815387%40@db.hzooluqlxxqtnzlkdwbi.supabase.co:5432/postgres
+postgresql://postgres.hzooluqlxxqtnzlkdwbi:H13n815387%40@aws-1-ap-northeast-2.pooler.supabase.com:5432/postgres
 ```
 
 ### Render
