@@ -1,13 +1,11 @@
-'use stric'
+'use strict';
 
-const controller ={};
-const models =require('../models');
+const models = require('../models');
 
-//show home page
-controller.showHomePage =  (req,res)=>{
+const controller = {};
+
+controller.showHomePage = (req, res) => {
     res.render('index');
 };
 
-
-
-module.exports =controller;
+module.exports = controller;

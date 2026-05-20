@@ -1,10 +1,15 @@
 {
   "name": "hipv_53cur1ty",
   "version": "1.0.0",
-  "description": "Demo",
+  "description": "Security guard company demo website with auth and comment system",
   "main": "index.js",
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node index.js",
+    "dev": "node --watch index.js",
+    "db:sync": "node -e \"require('./models').sequelize.sync({ force: false }).then(() => { console.log('DB synced'); process.exit(0); })\""
   },
   "keywords": [],
   "author": "",
@@ -13,6 +18,7 @@
     "@handlebars/allow-prototype-access": "^1.0.5",
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.20.2",
+    "dotenv": "^16.4.5",
     "express": "^4.18.2",
     "express-handlebars": "^7.1.2",
     "express-session": "^1.18.0",

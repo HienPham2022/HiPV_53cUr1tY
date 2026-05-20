@@ -1,32 +1,40 @@
+'use strict';
+
+require('dotenv').config();
 
 const express = require('express');
-const app = express();
-const bodyParser = require('body-parser');
-const port = process.env.PORT || 5555;
 const helmet = require('helmet');
 const session = require('express-session');
-const sessionMiddleware = require('./middlewares/sessionMiddleware');
-
-// Adding helmet middleware
-// app.use(helmet());
-
-// Handlebars
 const engineHandleBars = require('express-handlebars');
 const { allowInsecurePrototypeAccess } = require('@handlebars/allow-prototype-access');
 const Handlebars = require('handlebars');
+const sessionMiddleware = require('./middlewares/sessionMiddleware');
+
+const app = express();
+const port = process.env.PORT || 5555;
+
+// Security headers
+app.use(helmet({ contentSecurityPolicy: false }));
 
 // Static folder
-app.use(express.static(__dirname + '/securityPuplic'));
+app.use(express.static(`${__dirname}/securityPuplic`));
 
-// Define Handlebars engine
+// Handlebars engine
 const hbs = engineHandleBars.create({
-    layoutsDir: __dirname + '/views/layouts',
-    partialsDir: __dirname + '/views/partials',
+    layoutsDir: `${__dirname}/views/layouts`,
+    partialsDir: `${__dirname}/views/partials`,
     extname: 'hbs',
     defaultLayout: 'layout',
     helpers: {
-        raw: function(options) {
+        raw(options) {
             return options.fn(this);
+        },
+        formatDate(date) {
+            if (!date) return '';
+            return new Date(date).toLocaleDateString('vi-VN', {
+                year: 'numeric', month: '2-digit', day: '2-digit',
+                hour: '2-digit', minute: '2-digit'
+            });
         }
     },
     handlebars: allowInsecurePrototypeAccess(Handlebars)
@@ -34,15 +42,20 @@ const hbs = engineHandleBars.create({
 app.engine('hbs', hbs.engine);
 app.set('view engine', 'hbs');
 
-// Body parser
-app.use(bodyParser.urlencoded({ extended: true }));
+// Body parsers
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
 
-//
+// Session
 app.use(session({
-    cookie: { httpOnly:false,maxAge:null},
-    secret:'Secret',
-    resave:false,
-    saveUninitialized:false
+    secret: process.env.SESSION_SECRET || 'fallback_secret_change_me',
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        maxAge: null
+    }
 }));
 
 app.use(sessionMiddleware);
@@ -52,17 +65,18 @@ app.use('/', require('./routes/indexRouter'));
 app.use('/single', require('./routes/commentsRouter'));
 app.use('/users', require('./routes/userRouter'));
 
-// Error handling
-app.use((req, res, next) => {
-    res.status(404).send('Page not found');
+// 404 handler
+app.use((req, res) => {
+    res.status(404).render('error', { code: 404, message: 'Trang không tồn tại' });
 });
 
-app.use((error, req, res, next) => {
-    console.error(error);
-    res.status(500).send('Internal server error');
+// Global error handler
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+    res.status(500).render('error', { code: 500, message: 'Lỗi máy chủ nội bộ' });
 });
 
-// Start web server
+// Start server
 app.listen(port, () => {
     console.log(`Server is listening on port ${port}`);
 });

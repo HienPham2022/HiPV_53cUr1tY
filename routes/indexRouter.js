@@ -1,20 +1,19 @@
-'use strict'
+'use strict';
 
-const express = require ('express');
+const express = require('express');
 const router = express.Router();
-const controller = require('../controller/indexcontroller')
+const controller = require('../controller/indexcontroller');
 
-//create data for database
-router.get('/createUser',(req,res)=>{
-    let models = require('../models');
-    models.sequelize.sync().then(()=>{
-        res.send('create user!!!')
-    })
+router.get('/', controller.showHomePage);
+
+router.get('/createUser', (req, res) => {
+    const models = require('../models');
+    models.sequelize.sync().then(() => {
+        res.send('Database synced!');
+    }).catch(err => {
+        console.error(err);
+        res.status(500).send('Sync failed');
+    });
 });
-
-//route
-router.get('/',controller.showHomePage);
-
-
 
 module.exports = router;

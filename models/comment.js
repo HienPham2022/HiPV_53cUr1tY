@@ -1,27 +1,40 @@
 'use strict';
-const {
-  Model
-} = require('sequelize');
+
+const { Model } = require('sequelize');
+
 module.exports = (sequelize, DataTypes) => {
-  class Comment extends Model {
-    /**
-     * Helper method for defining associations.
-     * This method is not a part of Sequelize lifecycle.
-     * The `models/index` file will call this method automatically.
-     */
-    static associate(models) {
-      // define association here
+    class Comment extends Model {
+        static associate(models) {}
     }
-  }
-  Comment.init({
-    username: DataTypes.STRING,
-    email: DataTypes.STRING,
-    urlweb: DataTypes.STRING,
-    content: DataTypes.TEXT,
-    timeStemp:DataTypes.DATE,
-  }, {
-    sequelize,
-    modelName: 'Comment',
-  });
-  return Comment;
+
+    Comment.init({
+        username: {
+            type: DataTypes.STRING,
+            allowNull: false,
+            validate: { notEmpty: true }
+        },
+        email: {
+            type: DataTypes.STRING,
+            allowNull: true,
+            validate: { isEmail: true, allowNull: true }
+        },
+        urlweb: {
+            type: DataTypes.STRING,
+            allowNull: true
+        },
+        content: {
+            type: DataTypes.TEXT,
+            allowNull: false,
+            validate: { notEmpty: true }
+        },
+        timeStemp: {
+            type: DataTypes.DATE,
+            defaultValue: DataTypes.NOW
+        }
+    }, {
+        sequelize,
+        modelName: 'Comment'
+    });
+
+    return Comment;
 };

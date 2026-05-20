@@ -1,44 +1,33 @@
-document.addEventListener("DOMContentLoaded", function() {
-    var deleteBtn = document.getElementById("deleteBtn");
-
-    deleteBtn.addEventListener("click", function(event) {
-        event.preventDefault(); // Prevent the default action of the link
-        // Send DELETE request when the button is clicked
-        fetch('/single/deleteComment', {
-            method: 'DELETE'
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
+document.addEventListener('DOMContentLoaded', () => {
+    const deleteCommentBtn = document.getElementById('deleteBtn');
+    if (deleteCommentBtn) {
+        deleteCommentBtn.addEventListener('click', async (event) => {
+            event.preventDefault();
+            if (!confirm('Bạn có chắc muốn xoá tất cả bình luận không?')) return;
+            try {
+                const response = await fetch('/single/deleteComment', { method: 'DELETE' });
+                if (!response.ok) throw new Error('Network response was not ok');
+                window.location.href = '/single';
+            } catch (error) {
+                console.error('Error deleting comments:', error);
+                alert('Xoá thất bại, vui lòng thử lại.');
             }
-            // Handle successful response
-            console.log('Comment deleted successfully');
-        })
-        .catch(error => {
-            // Handle errors if any
-            console.error('There was a problem with the fetch operation:', error);
         });
-    });
-});
-document.addEventListener("DOMContentLoaded", function() {
-    var deleteBtn = document.getElementById("deleteBtnUser");
+    }
 
-    deleteBtn.addEventListener("click", function(event) {
-        event.preventDefault(); // Prevent the default action of the link
-        // Send DELETE request when the button is clicked
-        fetch('/users/deleteAllUsers', {
-            method: 'DELETE'
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
+    const deleteUserBtn = document.getElementById('deleteBtnUser');
+    if (deleteUserBtn) {
+        deleteUserBtn.addEventListener('click', async (event) => {
+            event.preventDefault();
+            if (!confirm('Bạn có chắc muốn xoá tất cả người dùng không?')) return;
+            try {
+                const response = await fetch('/users/deleteAllUsers', { method: 'DELETE' });
+                if (!response.ok) throw new Error('Network response was not ok');
+                window.location.href = '/users/login';
+            } catch (error) {
+                console.error('Error deleting users:', error);
+                alert('Xoá thất bại, vui lòng thử lại.');
             }
-            // Handle successful response
-            console.log('Comment deleted successfully');
-        })
-        .catch(error => {
-            // Handle errors if any
-            console.error('There was a problem with the fetch operation:', error);
         });
-    });
+    }
 });
