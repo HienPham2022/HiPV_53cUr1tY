@@ -93,6 +93,11 @@ console.log('=================');
 sequelize.authenticate()
     .then(() => {
         console.log('Kết nối Supabase thành công!');
+        // Auto sync tables (tạo bảng nếu chưa có)
+        return sequelize.sync({ alter: false });
+    })
+    .then(() => {
+        console.log('Database tables synced!');
         app.listen(port, () => {
             console.log(`Server is listening on port ${port}`);
         });
