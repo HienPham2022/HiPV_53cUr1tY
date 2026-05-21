@@ -78,6 +78,17 @@ app.use((err, req, res, next) => {
 
 // Start server after DB check
 const { sequelize } = require('./models');
+const { getSequelizeOptions } = require('./config/database');
+
+// Debug: hiển thị thông tin kết nối (ẩn password)
+const dbConfig = getSequelizeOptions();
+console.log('=== DB Config ===');
+console.log('Host:', dbConfig.host);
+console.log('Port:', dbConfig.port);
+console.log('Database:', dbConfig.database);
+console.log('Username:', dbConfig.username);
+console.log('Password:', dbConfig.password ? '***SET***' : '***MISSING***');
+console.log('=================');
 
 sequelize.authenticate()
     .then(() => {
