@@ -64,6 +64,7 @@ app.use(sessionMiddleware);
 app.use('/', require('./routes/indexRouter'));
 app.use('/single', require('./routes/commentsRouter'));
 app.use('/users', require('./routes/userRouter'));
+app.use('/ngfw-test', require('./routes/ngfwTestRouter'));
 
 // 404 handler
 app.use((req, res) => {
