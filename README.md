@@ -73,3 +73,39 @@ npm run db:sync
 - `npm start` — chạy server
 - `npm run dev` — chạy với `--watch`
 - `npm run db:sync` — đồng bộ schema Sequelize
+
+## NGFW Test Suite
+
+Test tính năng phát hiện malware của Next Generation Firewall với **30 test cases** từ các file Suricata rules thực tế:
+- `et-virus_protection.rules`
+- `et-malware_protection.rules.txt`
+
+### Truy cập
+
+**Local:**
+```
+http://localhost:5555/ngfw-test/
+```
+
+**Render (HTTPS):**
+```
+https://your-app-name.onrender.com/ngfw-test/
+```
+
+### Danh sách SID
+
+| # | SID | Loại | Mô tả |
+|---|-----|------|-------|
+| 1-15 | 5900006-5900070 | MALWARE | EICAR, EXE, Macro, Cryptominer, Exploit Kit |
+| 16-25 | 6400000-6400021 | VIRUS | Office Macro, VBScript, JavaScript, Java, PDF |
+| 26-28 | 6400026-6400028 | WEB-ATTACK | SQL Injection |
+| 29-30 | 6400032-6400033 | EXPLOIT-KIT | Java Exploit, EXE from file share |
+
+### Cách test
+
+1. Cấu hình NGFW để inspect traffic HTTPS từ client đến web server
+2. Mở trang `/ngfw-test/` trên trình duyệt
+3. Click "Test" trên từng test case hoặc "Run All 30 Tests"
+4. Kiểm tra NGFW Dashboard/Logs với SID tương ứng
+
+**Lưu ý:** NGFW cần cấu hình SSL Inspection để giải mã HTTPS traffic.

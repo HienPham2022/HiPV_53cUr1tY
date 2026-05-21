@@ -3,663 +3,243 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NGFW Test Suite - Suricata Rules Testing</title>
+    <title>NGFW Test Suite - 30 Real Suricata Rules</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
         :root {
             --bg-dark: #0f172a;
             --bg-card: #1e293b;
-            --bg-card-hover: #334155;
-            --border-color: #475569;
+            --border-color: #334155;
             --text-primary: #f1f5f9;
             --text-secondary: #94a3b8;
-            --accent-red: #ef4444;
-            --accent-orange: #f97316;
-            --accent-yellow: #eab308;
-            --accent-green: #22c55e;
-            --accent-blue: #3b82f6;
-            --accent-purple: #a855f7;
-            --accent-cyan: #06b6d4;
         }
-        * { box-sizing: border-box; }
-        body {
-            background: var(--bg-dark);
-            color: var(--text-primary);
-            font-family: 'Segoe UI', system-ui, sans-serif;
-            min-height: 100vh;
-        }
-        
-        /* Header */
-        .header {
-            background: linear-gradient(135deg, #1e3a5f 0%, #0f172a 100%);
-            border-bottom: 1px solid var(--border-color);
-            padding: 20px 0;
-        }
-        .header h1 { font-size: 1.8rem; margin: 0; }
-        
-        /* Topology */
-        .topology-container {
-            background: var(--bg-card);
-            border-radius: 12px;
-            padding: 25px;
-            margin-bottom: 25px;
-        }
-        .topology-flow {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 15px;
-            flex-wrap: wrap;
-        }
-        .topology-node {
-            background: linear-gradient(145deg, #334155, #1e293b);
-            border: 2px solid var(--accent-blue);
-            border-radius: 12px;
-            padding: 20px 30px;
-            text-align: center;
-            min-width: 140px;
-        }
-        .topology-node.ngfw { border-color: var(--accent-red); }
-        .topology-node.server { border-color: var(--accent-green); }
-        .topology-node i { font-size: 2rem; margin-bottom: 8px; }
-        .topology-arrow { font-size: 1.5rem; color: var(--accent-cyan); }
-        
-        /* Test Cases Grid */
-        .test-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
-            gap: 15px;
-        }
-        .test-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            border-radius: 10px;
-            overflow: hidden;
-            transition: all 0.2s ease;
-        }
-        .test-card:hover {
-            border-color: var(--accent-blue);
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
-        }
-        .test-card-header {
-            background: rgba(255,255,255,0.03);
-            padding: 12px 15px;
-            border-bottom: 1px solid var(--border-color);
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-        .test-number {
-            width: 36px;
-            height: 36px;
-            background: var(--accent-blue);
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 700;
-            font-size: 1rem;
-            flex-shrink: 0;
-        }
-        .test-card-body { padding: 15px; }
-        .test-card-footer {
-            padding: 12px 15px;
-            background: rgba(0,0,0,0.2);
-            display: flex;
-            gap: 8px;
-        }
-        
-        /* SID Badge */
-        .sid-badge {
-            background: linear-gradient(135deg, #059669, #047857);
-            padding: 5px 10px;
-            border-radius: 6px;
-            font-family: 'Monaco', 'Consolas', monospace;
-            font-size: 0.85rem;
-            font-weight: 600;
-        }
-        
-        /* Severity Badges */
-        .severity-critical { background: var(--accent-red); }
-        .severity-high { background: var(--accent-orange); }
-        .severity-medium { background: var(--accent-yellow); color: #000; }
-        .severity-low { background: var(--accent-green); }
-        
-        /* Category Colors */
-        .cat-malware { border-left: 4px solid var(--accent-red); }
-        .cat-file { border-left: 4px solid var(--accent-orange); }
-        .cat-web { border-left: 4px solid var(--accent-purple); }
-        .cat-leak { border-left: 4px solid var(--accent-cyan); }
-        .cat-c2 { border-left: 4px solid #f43f5e; }
-        
-        /* Endpoint Code */
-        .endpoint {
-            background: #0f172a;
-            padding: 8px 12px;
-            border-radius: 6px;
-            font-family: 'Monaco', monospace;
-            font-size: 0.8rem;
-            color: var(--accent-green);
-            margin: 10px 0;
-            word-break: break-all;
-        }
-        
-        /* Rule Info */
-        .rule-info {
-            background: #0f172a;
-            border: 1px solid #334155;
-            border-radius: 6px;
-            padding: 10px;
-            font-family: monospace;
-            font-size: 0.72rem;
-            color: var(--accent-cyan);
-            max-height: 60px;
-            overflow-y: auto;
-            line-height: 1.4;
-        }
-        
-        /* Results Panel */
-        .results-panel {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: #1e293b;
-            border-top: 3px solid var(--accent-blue);
-            max-height: 350px;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            z-index: 1000;
-            transition: transform 0.3s ease;
-        }
-        .results-panel.hidden { transform: translateY(100%); }
-        .results-header {
-            background: #0f172a;
-            padding: 12px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid var(--border-color);
-            flex-shrink: 0;
-        }
-        .results-body {
-            flex: 1;
-            overflow-y: auto;
-            padding: 15px 20px;
-        }
-        .result-item {
-            background: #0f172a;
-            border: 1px solid #334155;
-            border-radius: 8px;
-            padding: 15px;
-            margin-bottom: 12px;
-        }
-        .result-item.success { border-left: 4px solid var(--accent-green); }
-        .result-item.blocked { border-left: 4px solid var(--accent-red); }
-        .result-item.pending { border-left: 4px solid var(--accent-yellow); }
-        
-        .result-title {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 10px;
-        }
-        .result-details {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 10px;
-            font-size: 0.9rem;
-        }
-        .result-detail-item {
-            background: rgba(255,255,255,0.05);
-            padding: 8px 12px;
-            border-radius: 6px;
-        }
-        .result-detail-item label {
-            color: var(--text-secondary);
-            font-size: 0.75rem;
-            display: block;
-            margin-bottom: 3px;
-        }
-        
-        /* Buttons */
-        .btn-test {
-            background: linear-gradient(135deg, #dc2626, #b91c1c);
-            border: none;
-            color: white;
-            padding: 8px 16px;
-            border-radius: 6px;
-            font-weight: 500;
-            transition: all 0.2s;
-        }
-        .btn-test:hover {
-            background: linear-gradient(135deg, #ef4444, #dc2626);
-            transform: scale(1.02);
-        }
-        .btn-view {
-            background: transparent;
-            border: 1px solid var(--accent-blue);
-            color: var(--accent-blue);
-            padding: 8px 16px;
-            border-radius: 6px;
-        }
-        .btn-view:hover { background: var(--accent-blue); color: white; }
-        
-        /* Stats */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 15px;
-            margin-bottom: 25px;
-        }
-        .stat-card {
-            background: var(--bg-card);
-            border-radius: 10px;
-            padding: 20px;
-            text-align: center;
-        }
-        .stat-card h2 { font-size: 2rem; margin: 0; }
-        .stat-card p { margin: 5px 0 0; color: var(--text-secondary); font-size: 0.85rem; }
-        
-        /* Run All Button */
-        .run-all-btn {
-            background: linear-gradient(135deg, #059669, #047857);
-            border: none;
-            color: white;
-            padding: 12px 30px;
-            border-radius: 8px;
-            font-size: 1rem;
-            font-weight: 600;
-        }
-        .run-all-btn:hover { background: linear-gradient(135deg, #10b981, #059669); }
-        
-        /* Badge */
-        .badge { font-weight: 500; padding: 5px 10px; border-radius: 5px; }
-        
-        /* Scrollbar */
-        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        body { background: var(--bg-dark); color: var(--text-primary); font-family: 'Segoe UI', system-ui, sans-serif; }
+        .header { background: linear-gradient(135deg, #1e3a5f 0%, #0f172a 100%); border-bottom: 1px solid var(--border-color); padding: 20px 0; }
+        .topology { background: var(--bg-card); border-radius: 12px; padding: 20px; margin-bottom: 20px; display: flex; align-items: center; justify-content: center; gap: 20px; flex-wrap: wrap; }
+        .topo-node { background: #334155; border: 2px solid #3b82f6; border-radius: 10px; padding: 15px 25px; text-align: center; }
+        .topo-node.ngfw { border-color: #ef4444; }
+        .topo-node.server { border-color: #22c55e; }
+        .topo-arrow { font-size: 1.5rem; color: #06b6d4; }
+        .test-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(400px, 1fr)); gap: 12px; }
+        .test-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden; transition: all 0.2s; }
+        .test-card:hover { border-color: #3b82f6; transform: translateY(-2px); }
+        .test-card-header { background: rgba(255,255,255,0.03); padding: 10px 15px; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; gap: 10px; }
+        .test-num { width: 32px; height: 32px; background: #3b82f6; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.9rem; flex-shrink: 0; }
+        .test-card-body { padding: 12px 15px; }
+        .test-card-footer { padding: 10px 15px; background: rgba(0,0,0,0.2); display: flex; gap: 8px; }
+        .sid-badge { background: linear-gradient(135deg, #059669, #047857); padding: 4px 8px; border-radius: 5px; font-family: monospace; font-size: 0.8rem; font-weight: 600; }
+        .severity-critical { background: #ef4444; }
+        .severity-high { background: #f97316; }
+        .severity-medium { background: #eab308; color: #000; }
+        .cat-malware { border-left: 4px solid #ef4444; }
+        .cat-virus { border-left: 4px solid #f97316; }
+        .cat-exploit { border-left: 4px solid #a855f7; }
+        .cat-web { border-left: 4px solid #3b82f6; }
+        .cat-sandbox { border-left: 4px solid #06b6d4; }
+        .endpoint { background: #0f172a; padding: 6px 10px; border-radius: 5px; font-family: monospace; font-size: 0.75rem; color: #22c55e; margin: 8px 0; }
+        .rule-box { background: #0f172a; border: 1px solid #334155; border-radius: 5px; padding: 8px; font-family: monospace; font-size: 0.65rem; color: #06b6d4; max-height: 50px; overflow-y: auto; line-height: 1.3; }
+        .btn-test { background: linear-gradient(135deg, #dc2626, #b91c1c); border: none; color: white; padding: 6px 14px; border-radius: 5px; font-weight: 500; font-size: 0.85rem; }
+        .btn-test:hover { background: linear-gradient(135deg, #ef4444, #dc2626); }
+        .btn-open { background: transparent; border: 1px solid #3b82f6; color: #3b82f6; padding: 6px 14px; border-radius: 5px; font-size: 0.85rem; }
+        .btn-open:hover { background: #3b82f6; color: white; }
+        .results-panel { position: fixed; bottom: 0; left: 0; right: 0; background: #1e293b; border-top: 3px solid #3b82f6; max-height: 300px; overflow: hidden; display: flex; flex-direction: column; z-index: 1000; transform: translateY(100%); transition: transform 0.3s; }
+        .results-panel.show { transform: translateY(0); }
+        .results-header { background: #0f172a; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); }
+        .results-body { flex: 1; overflow-y: auto; padding: 15px 20px; }
+        .result-item { background: #0f172a; border: 1px solid #334155; border-radius: 6px; padding: 12px; margin-bottom: 10px; border-left: 4px solid #22c55e; }
+        .result-item.blocked { border-left-color: #ef4444; }
+        .stats-row { display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap; }
+        .stat-box { background: var(--bg-card); border-radius: 8px; padding: 15px 20px; text-align: center; flex: 1; min-width: 100px; }
+        .stat-box h3 { margin: 0; font-size: 1.8rem; }
+        .stat-box p { margin: 5px 0 0; color: var(--text-secondary); font-size: 0.85rem; }
+        .content-wrapper { padding-bottom: 80px; }
+        ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: var(--bg-dark); }
-        ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #64748b; }
-        
-        /* Footer spacing for results panel */
-        .content-wrapper { padding-bottom: 100px; }
-        
-        @media (max-width: 768px) {
-            .stats-grid { grid-template-columns: repeat(2, 1fr); }
-            .test-grid { grid-template-columns: 1fr; }
-            .topology-flow { flex-direction: column; }
-            .topology-arrow { transform: rotate(90deg); }
-        }
+        ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 3px; }
+        @media (max-width: 768px) { .test-grid { grid-template-columns: 1fr; } .topology { flex-direction: column; } .topo-arrow { transform: rotate(90deg); } }
     </style>
 </head>
 <body>
-    <!-- Header -->
     <div class="header">
         <div class="container">
             <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
                 <div>
-                    <h1><i class="fas fa-shield-alt text-danger me-2"></i>NGFW Test Suite</h1>
-                    <p class="text-secondary mb-0">Suricata Rules Testing • SID 5900006 - 6400033</p>
+                    <h1 class="h3 mb-1"><i class="fas fa-shield-alt text-danger me-2"></i>NGFW Test Suite</h1>
+                    <p class="text-secondary mb-0 small">30 Test Cases từ <code>et-virus_protection.rules</code> & <code>et-malware_protection.rules.txt</code></p>
+                    <p class="mb-0 small"><i class="fas fa-server me-1"></i>Server: <code id="baseUrl" class="text-success"></code></p>
                 </div>
-                <button class="run-all-btn" onclick="runAllTests()">
-                    <i class="fas fa-play me-2"></i>Run All 20 Tests
-                </button>
+                <button class="btn btn-success" onclick="runAllTests()"><i class="fas fa-play me-2"></i>Run All 30 Tests</button>
             </div>
         </div>
     </div>
 
     <div class="container py-4 content-wrapper">
-        <!-- Topology -->
-        <div class="topology-container">
-            <h5 class="mb-3"><i class="fas fa-network-wired me-2"></i>Network Topology</h5>
-            <div class="topology-flow">
-                <div class="topology-node">
-                    <i class="fas fa-laptop text-info"></i>
-                    <div class="fw-bold">Client</div>
-                    <small class="text-secondary">Browser</small>
-                </div>
-                <div class="topology-arrow"><i class="fas fa-arrow-right"></i></div>
-                <div class="topology-node ngfw">
-                    <i class="fas fa-shield-alt text-danger"></i>
-                    <div class="fw-bold">NGFW</div>
-                    <small class="text-secondary">Suricata IDS/IPS</small>
-                </div>
-                <div class="topology-arrow"><i class="fas fa-arrow-right"></i></div>
-                <div class="topology-node server">
-                    <i class="fas fa-server text-success"></i>
-                    <div class="fw-bold">Web Server</div>
-                    <small class="text-secondary">This App</small>
-                </div>
-            </div>
+        <div class="topology">
+            <div class="topo-node"><i class="fas fa-laptop fa-2x mb-2 text-info d-block"></i><strong>Client</strong></div>
+            <div class="topo-arrow"><i class="fas fa-arrow-right"></i></div>
+            <div class="topo-node ngfw"><i class="fas fa-shield-alt fa-2x mb-2 text-danger d-block"></i><strong>NGFW</strong><br><small class="text-secondary">Suricata IDS/IPS</small></div>
+            <div class="topo-arrow"><i class="fas fa-arrow-right"></i></div>
+            <div class="topo-node server"><i class="fas fa-server fa-2x mb-2 text-success d-block"></i><strong>Web Server</strong></div>
         </div>
 
-        <!-- Stats -->
-        <div class="stats-grid">
-            <div class="stat-card">
-                <h2 class="text-primary">20</h2>
-                <p>Test Cases</p>
-            </div>
-            <div class="stat-card">
-                <h2 class="text-danger">3</h2>
-                <p>Malware</p>
-            </div>
-            <div class="stat-card">
-                <h2 class="text-warning">5</h2>
-                <p>Suspicious Files</p>
-            </div>
-            <div class="stat-card">
-                <h2 class="text-purple" style="color: var(--accent-purple);">4</h2>
-                <p>Web Attacks</p>
-            </div>
-            <div class="stat-card">
-                <h2 class="text-info">8</h2>
-                <p>Data Leak & C2</p>
-            </div>
+        <div class="stats-row">
+            <div class="stat-box"><h3 class="text-primary">30</h3><p>Test Cases</p></div>
+            <div class="stat-box"><h3 class="text-danger">15</h3><p>MALWARE</p></div>
+            <div class="stat-box"><h3 class="text-warning">10</h3><p>VIRUS</p></div>
+            <div class="stat-box"><h3 class="text-purple" style="color:#a855f7">3</h3><p>EXPLOIT-KIT</p></div>
+            <div class="stat-box"><h3 class="text-info">2</h3><p>Anti-Sandbox</p></div>
         </div>
 
-        <!-- Test Cases Title -->
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <h4 class="mb-0"><i class="fas fa-list-check me-2"></i>20 Test Cases</h4>
-            <div class="text-secondary">
-                <span class="me-3"><i class="fas fa-circle text-danger me-1"></i>Malware</span>
-                <span class="me-3"><i class="fas fa-circle text-warning me-1"></i>File</span>
-                <span class="me-3" style="color: var(--accent-purple);"><i class="fas fa-circle me-1"></i>Web</span>
-                <span class="me-3"><i class="fas fa-circle text-info me-1"></i>Leak</span>
-                <span><i class="fas fa-circle me-1" style="color: #f43f5e;"></i>C2</span>
-            </div>
-        </div>
-
-        <!-- Test Cases Grid -->
-        <div class="test-grid" id="testGrid">
-            <!-- Generated by JS -->
-        </div>
+        <div class="test-grid" id="testGrid"></div>
     </div>
 
-    <!-- Results Panel -->
-    <div class="results-panel hidden" id="resultsPanel">
+    <div class="results-panel" id="resultsPanel">
         <div class="results-header">
+            <h6 class="mb-0"><i class="fas fa-terminal me-2"></i>Test Results</h6>
             <div>
-                <h5 class="mb-0"><i class="fas fa-terminal me-2"></i>Test Results</h5>
-            </div>
-            <div>
-                <button class="btn btn-sm btn-outline-secondary me-2" onclick="clearResults()">
-                    <i class="fas fa-trash me-1"></i>Clear
-                </button>
-                <button class="btn btn-sm btn-outline-light" onclick="toggleResults()">
-                    <i class="fas fa-chevron-down"></i>
-                </button>
+                <button class="btn btn-sm btn-outline-secondary me-2" onclick="clearResults()"><i class="fas fa-trash"></i></button>
+                <button class="btn btn-sm btn-outline-light" onclick="toggleResults()"><i class="fas fa-chevron-down"></i></button>
             </div>
         </div>
-        <div class="results-body" id="resultsBody">
-            <!-- Results will appear here -->
-        </div>
+        <div class="results-body" id="resultsBody"></div>
     </div>
 
     <script>
         const TEST_CASES = [
-            // MALWARE (1-3)
-            { id: 1, sid: '5900006', name: 'EICAR Test File Detection', cat: 'Malware', catClass: 'malware',
-              desc: 'EICAR pattern detection - Standard antivirus test file download via HTTP',
-              endpoint: '/ngfw-test/eicar.com', expected: 'BLOCK', severity: 'HIGH',
-              rule: 'alert http any any -> any any (msg:"MALWARE EICAR"; content:"X5O!P%@AP[4\\PZX54(P^)7CC)7}"; sid:5900006;)' },
-            
-            { id: 2, sid: '5900007', name: 'EICAR in ZIP Archive', cat: 'Malware', catClass: 'malware',
-              desc: 'EICAR trong file ZIP - Test khả năng inspect archive',
-              endpoint: '/ngfw-test/eicar.zip', expected: 'BLOCK', severity: 'HIGH',
-              rule: 'alert http any any -> any any (msg:"MALWARE EICAR Archive"; file_data; content:"EICAR"; sid:5900007;)' },
-            
-            { id: 3, sid: '5900008', name: 'EICAR Base64 Encoded', cat: 'Malware', catClass: 'malware',
-              desc: 'EICAR mã hóa Base64 - Test khả năng decode',
-              endpoint: '/ngfw-test/eicar-b64', expected: 'BLOCK', severity: 'HIGH',
-              rule: 'alert http any any -> any any (msg:"MALWARE EICAR B64"; content:"WDVPIVAlQEFQ"; sid:5900008;)' },
-
-            // SUSPICIOUS FILES (4-8)
-            { id: 4, sid: '6100001', name: 'EXE Download via HTTP', cat: 'Suspicious File', catClass: 'file',
-              desc: 'Download file .exe qua HTTP - Potential malware delivery',
-              endpoint: '/ngfw-test/download/test.exe', expected: 'ALERT', severity: 'MEDIUM',
-              rule: 'alert http any any -> any any (msg:"POLICY EXE Download"; content:"MZ"; depth:2; sid:6100001;)' },
-            
-            { id: 5, sid: '6100002', name: 'DLL File Download', cat: 'Suspicious File', catClass: 'file',
-              desc: 'Download file DLL - DLL hijacking vector',
-              endpoint: '/ngfw-test/download/test.dll', expected: 'ALERT', severity: 'MEDIUM',
-              rule: 'alert http any any -> any any (msg:"POLICY DLL Download"; content:".dll"; sid:6100002;)' },
-            
-            { id: 6, sid: '6100003', name: 'SCR Screensaver Download', cat: 'Suspicious File', catClass: 'file',
-              desc: 'Download file SCR - Disguised executable',
-              endpoint: '/ngfw-test/download/test.scr', expected: 'BLOCK', severity: 'HIGH',
-              rule: 'alert http any any -> any any (msg:"MALWARE SCR Download"; content:".scr"; sid:6100003;)' },
-            
-            { id: 7, sid: '6100004', name: 'BAT Script Download', cat: 'Suspicious File', catClass: 'file',
-              desc: 'Download batch script - Command execution',
-              endpoint: '/ngfw-test/download/test.bat', expected: 'ALERT', severity: 'HIGH',
-              rule: 'alert http any any -> any any (msg:"POLICY Batch Script"; content:"@echo"; sid:6100004;)' },
-            
-            { id: 8, sid: '6100005', name: 'PowerShell Script Download', cat: 'Suspicious File', catClass: 'file',
-              desc: 'Download PS1 script - Fileless malware vector',
-              endpoint: '/ngfw-test/download/test.ps1', expected: 'BLOCK', severity: 'HIGH',
-              rule: 'alert http any any -> any any (msg:"MALWARE PowerShell"; content:"Invoke-"; sid:6100005;)' },
-
-            // WEB ATTACKS (9-12)
-            { id: 9, sid: '6200001', name: 'SQL Injection Error', cat: 'Web Attack', catClass: 'web',
-              desc: 'SQL error trong response - SQLi vulnerability indicator',
-              endpoint: '/ngfw-test/vuln/sqli-error', expected: 'ALERT', severity: 'HIGH',
-              rule: 'alert http any any -> any any (msg:"WEB SQLi Error"; content:"SQL syntax"; sid:6200001;)' },
-            
-            { id: 10, sid: '6200002', name: 'XSS Pattern Response', cat: 'Web Attack', catClass: 'web',
-              desc: 'Cross-Site Scripting pattern trong response',
-              endpoint: '/ngfw-test/vuln/xss-reflect', expected: 'ALERT', severity: 'MEDIUM',
-              rule: 'alert http any any -> any any (msg:"WEB XSS"; content:"<script>"; content:"alert("; sid:6200002;)' },
-            
-            { id: 11, sid: '6200003', name: 'Path Traversal Response', cat: 'Web Attack', catClass: 'web',
-              desc: 'Directory traversal - LFI vulnerability indicator',
-              endpoint: '/ngfw-test/vuln/path-traversal', expected: 'ALERT', severity: 'HIGH',
-              rule: 'alert http any any -> any any (msg:"WEB LFI"; content:"../../../"; content:"/etc/passwd"; sid:6200003;)' },
-            
-            { id: 12, sid: '6200004', name: 'Command Injection Output', cat: 'Web Attack', catClass: 'web',
-              desc: 'Shell command output - RCE vulnerability indicator',
-              endpoint: '/ngfw-test/vuln/cmd-injection', expected: 'ALERT', severity: 'CRITICAL',
-              rule: 'alert http any any -> any any (msg:"WEB RCE"; content:"/bin/sh"; content:"whoami"; sid:6200004;)' },
-
-            // DATA LEAK (13-16)
-            { id: 13, sid: '6300001', name: 'Credit Card Exposure', cat: 'Data Leak', catClass: 'leak',
-              desc: 'Credit card numbers trong response - PCI-DSS violation',
-              endpoint: '/ngfw-test/leak/credit-card', expected: 'ALERT', severity: 'CRITICAL',
-              rule: 'alert http any any -> any any (msg:"DATA-LEAK CC"; pcre:"/4[0-9]{12}(?:[0-9]{3})?/"; sid:6300001;)' },
-            
-            { id: 14, sid: '6300002', name: 'SSN Pattern Exposure', cat: 'Data Leak', catClass: 'leak',
-              desc: 'Social Security Number leak - PII exposure',
-              endpoint: '/ngfw-test/leak/ssn', expected: 'ALERT', severity: 'CRITICAL',
-              rule: 'alert http any any -> any any (msg:"DATA-LEAK SSN"; pcre:"/[0-9]{3}-[0-9]{2}-[0-9]{4}/"; sid:6300002;)' },
-            
-            { id: 15, sid: '6300003', name: 'Private Key Exposure', cat: 'Data Leak', catClass: 'leak',
-              desc: 'RSA/SSH private key trong response - Critical breach',
-              endpoint: '/ngfw-test/leak/private-key', expected: 'BLOCK', severity: 'CRITICAL',
-              rule: 'alert http any any -> any any (msg:"DATA-LEAK PrivKey"; content:"BEGIN RSA PRIVATE KEY"; sid:6300003;)' },
-            
-            { id: 16, sid: '6300004', name: 'Password Hash Exposure', cat: 'Data Leak', catClass: 'leak',
-              desc: 'Password hashes trong response - Credential theft',
-              endpoint: '/ngfw-test/leak/password-hash', expected: 'ALERT', severity: 'HIGH',
-              rule: 'alert http any any -> any any (msg:"DATA-LEAK Hash"; pcre:"/\\$[256]\\$/"; sid:6300004;)' },
-
-            // C2 / MALWARE (17-20)
-            { id: 17, sid: '6400001', name: 'Malicious User-Agent', cat: 'C2/Malware', catClass: 'c2',
-              desc: 'Response to known malware user-agent - Bot communication',
-              endpoint: '/ngfw-test/c2/user-agent', expected: 'ALERT', severity: 'HIGH',
-              rule: 'alert http any any -> any any (msg:"MALWARE Bot UA"; content:"Trojan"; sid:6400001;)' },
-            
-            { id: 18, sid: '6400002', name: 'Base64 C2 Payload', cat: 'C2/Malware', catClass: 'c2',
-              desc: 'Base64 encoded C2 command - Malware communication',
-              endpoint: '/ngfw-test/c2/b64-payload', expected: 'ALERT', severity: 'MEDIUM',
-              rule: 'alert http any any -> any any (msg:"MALWARE C2 B64"; content:"ZG93bmxvYWQ="; sid:6400002;)' },
-            
-            { id: 19, sid: '6400003', name: 'Shellcode Pattern', cat: 'C2/Malware', catClass: 'c2',
-              desc: 'Hex shellcode trong response - Active exploitation',
-              endpoint: '/ngfw-test/c2/shellcode', expected: 'BLOCK', severity: 'CRITICAL',
-              rule: 'alert http any any -> any any (msg:"SHELLCODE x86"; content:"|90 90 90 90|"; sid:6400003;)' },
-            
-            { id: 20, sid: '6400033', name: 'Webshell Detection', cat: 'C2/Malware', catClass: 'c2',
-              desc: 'PHP/ASP/JSP webshell patterns - Server compromise',
-              endpoint: '/ngfw-test/c2/webshell', expected: 'BLOCK', severity: 'CRITICAL',
-              rule: 'alert http any any -> any any (msg:"MALWARE Webshell"; content:"eval($_"; content:"shell_exec"; sid:6400033;)' }
+            { id: 1, sid: '5900006', name: 'EICAR Test File - HTTP Download', cat: 'MALWARE', catClass: 'malware', endpoint: '/ngfw-test/test/5900006', severity: 'HIGH',
+              rule: 'drop http ... (msg:"MALWARE EICAR Test File - HTTP Download Blocked"; content:"X5O!P%@AP[4|5C|PZX54(P^)7CC)7}|24|EICAR"; sid:5900006;)' },
+            { id: 2, sid: '5900012', name: 'Suspicious EXE Download', cat: 'MALWARE', catClass: 'malware', endpoint: '/ngfw-test/test/5900012', severity: 'HIGH',
+              rule: 'drop http ... (msg:"MALWARE Suspicious EXE Download"; content:"MZ"; depth:2; sid:5900012;)' },
+            { id: 3, sid: '5900014', name: 'Macro-Enabled Document Download', cat: 'MALWARE', catClass: 'malware', endpoint: '/ngfw-test/test/5900014', severity: 'HIGH',
+              rule: 'drop http ... (msg:"MALWARE Macro-Enabled Document Download"; content:"PK"; depth:2; sid:5900014;)' },
+            { id: 4, sid: '5900015', name: 'Windows Script File Download', cat: 'MALWARE', catClass: 'malware', endpoint: '/ngfw-test/test/5900015', severity: 'HIGH',
+              rule: 'drop http ... (msg:"MALWARE Windows Script File Download"; content:"WScript"; sid:5900015;)' },
+            { id: 5, sid: '5900016', name: 'PE Executable Downloaded', cat: 'MALWARE', catClass: 'malware', endpoint: '/ngfw-test/test/5900016', severity: 'CRITICAL',
+              rule: 'drop http ... (msg:"MALWARE PE Executable Downloaded"; content:"MZ"; content:"PE|00 00|"; sid:5900016;)' },
+            { id: 6, sid: '5900029', name: 'Coinhive Cryptominer', cat: 'MALWARE', catClass: 'malware', endpoint: '/ngfw-test/test/5900029', severity: 'MEDIUM',
+              rule: 'drop http ... (msg:"MALWARE Coinhive Cryptominer"; content:"coinhive"; sid:5900029;)' },
+            { id: 7, sid: '5900032', name: 'CryptoLoot Miner', cat: 'MALWARE', catClass: 'malware', endpoint: '/ngfw-test/test/5900032', severity: 'MEDIUM',
+              rule: 'drop http ... (msg:"MALWARE CryptoLoot Miner"; content:"crypto-loot"; sid:5900032;)' },
+            { id: 8, sid: '5900035', name: 'JSECoin Miner', cat: 'MALWARE', catClass: 'malware', endpoint: '/ngfw-test/test/5900035', severity: 'MEDIUM',
+              rule: 'drop http ... (msg:"MALWARE JSECoin Miner"; content:"jsecoin"; sid:5900035;)' },
+            { id: 9, sid: '5900044', name: 'RIG Exploit Kit Landing Page', cat: 'EXPLOIT-KIT', catClass: 'exploit', endpoint: '/ngfw-test/test/5900044', severity: 'HIGH',
+              rule: 'drop http ... (msg:"MALWARE RIG Exploit Kit Landing Page"; content:"iframe"; sid:5900044;)' },
+            { id: 10, sid: '5900045', name: 'Fallout Exploit Kit', cat: 'EXPLOIT-KIT', catClass: 'exploit', endpoint: '/ngfw-test/test/5900045', severity: 'HIGH',
+              rule: 'drop http ... (msg:"MALWARE Fallout Exploit Kit"; content:"FWS"; depth:3; sid:5900045;)' },
+            { id: 11, sid: '5900048', name: 'Suspicious ZIP with EXE', cat: 'MALWARE', catClass: 'malware', endpoint: '/ngfw-test/test/5900048', severity: 'HIGH',
+              rule: 'drop http ... (msg:"MALWARE Suspicious ZIP Download"; content:"PK|03 04|"; content:".exe"; sid:5900048;)' },
+            { id: 12, sid: '5900049', name: 'HTML Smuggling Base64', cat: 'MALWARE', catClass: 'malware', endpoint: '/ngfw-test/test/5900049', severity: 'CRITICAL',
+              rule: 'drop http ... (msg:"MALWARE HTML Smuggling - Base64 Encoded Payload"; content:"data:application/octet-stream;base64"; sid:5900049;)' },
+            { id: 13, sid: '5900063', name: 'VirtualBox Detection', cat: 'ANTI-SANDBOX', catClass: 'sandbox', endpoint: '/ngfw-test/test/5900063', severity: 'MEDIUM',
+              rule: 'drop http ... (msg:"MALWARE VirtualBox Detection Query"; content:"VBoxService"; sid:5900063;)' },
+            { id: 14, sid: '5900064', name: 'VMware Detection', cat: 'ANTI-SANDBOX', catClass: 'sandbox', endpoint: '/ngfw-test/test/5900064', severity: 'MEDIUM',
+              rule: 'drop http ... (msg:"MALWARE VMware Detection Query"; content:"vmtoolsd"; sid:5900064;)' },
+            { id: 15, sid: '5900070', name: 'EICAR Attachment Header', cat: 'MALWARE', catClass: 'malware', endpoint: '/ngfw-test/test/5900070', severity: 'HIGH',
+              rule: 'drop http ... (msg:"EICAR Blocked - Attachment Header"; content:"Content-Disposition"; content:"eicar"; sid:5900070;)' },
+            { id: 16, sid: '6400000', name: 'PE File with Auto-Run', cat: 'VIRUS', catClass: 'virus', endpoint: '/ngfw-test/test/6400000', severity: 'HIGH',
+              rule: 'drop http ... (msg:"VIRUS Suspicious PE File with Auto-Run"; content:"MZ"; content:"autorun"; sid:6400000;)' },
+            { id: 17, sid: '6400001', name: 'Office Macro Shell Execute', cat: 'VIRUS', catClass: 'virus', endpoint: '/ngfw-test/test/6400001', severity: 'HIGH',
+              rule: 'drop http ... (msg:"VIRUS Office Macro with Shell Execute"; content:"Shell"; content:"Execute"; sid:6400001;)' },
+            { id: 18, sid: '6400002', name: 'Word Macro AutoOpen', cat: 'VIRUS', catClass: 'virus', endpoint: '/ngfw-test/test/6400002', severity: 'HIGH',
+              rule: 'drop http ... (msg:"VIRUS Word Macro Auto-Execute"; content:"AutoOpen"; sid:6400002;)' },
+            { id: 19, sid: '6400003', name: 'Excel Macro Auto_Open', cat: 'VIRUS', catClass: 'virus', endpoint: '/ngfw-test/test/6400003', severity: 'HIGH',
+              rule: 'drop http ... (msg:"VIRUS Excel Macro Auto-Execute"; content:"Auto_Open"; sid:6400003;)' },
+            { id: 20, sid: '6400007', name: 'Macro CreateObject', cat: 'VIRUS', catClass: 'virus', endpoint: '/ngfw-test/test/6400007', severity: 'HIGH',
+              rule: 'drop http ... (msg:"VIRUS Macro-Enabled Document with CreateObject"; content:"CreateObject"; sid:6400007;)' },
+            { id: 21, sid: '6400011', name: 'VBScript Self-Replication', cat: 'VIRUS', catClass: 'virus', endpoint: '/ngfw-test/test/6400011', severity: 'CRITICAL',
+              rule: 'drop http ... (msg:"VIRUS VBScript Self-Replication"; content:"WScript.Shell"; content:"CopyFile"; sid:6400011;)' },
+            { id: 22, sid: '6400012', name: 'JavaScript FileSystem Access', cat: 'VIRUS', catClass: 'virus', endpoint: '/ngfw-test/test/6400012', severity: 'CRITICAL',
+              rule: 'drop http ... (msg:"VIRUS JavaScript File System Access"; content:"ActiveXObject"; content:"Scripting.FileSystemObject"; sid:6400012;)' },
+            { id: 23, sid: '6400013', name: 'Batch File Self-Replication', cat: 'VIRUS', catClass: 'virus', endpoint: '/ngfw-test/test/6400013', severity: 'HIGH',
+              rule: 'drop http ... (msg:"VIRUS Batch File Self-Replication"; content:"copy"; content:"%0"; sid:6400013;)' },
+            { id: 24, sid: '6400020', name: 'Java Malicious Class File', cat: 'VIRUS', catClass: 'virus', endpoint: '/ngfw-test/test/6400020', severity: 'HIGH',
+              rule: 'drop http ... (msg:"VIRUS Java Malicious Class File"; content:"|CA FE BA BE|"; sid:6400020;)' },
+            { id: 25, sid: '6400021', name: 'PDF with Malicious JavaScript', cat: 'VIRUS', catClass: 'virus', endpoint: '/ngfw-test/test/6400021', severity: 'CRITICAL',
+              rule: 'drop http ... (msg:"VIRUS PDF with Malicious JavaScript"; content:"/JS"; content:"/JavaScript"; sid:6400021;)' },
+            { id: 26, sid: '6400026', name: 'SQL Injection SELECT', cat: 'WEB-ATTACK', catClass: 'web', endpoint: '/ngfw-test/test/6400026', severity: 'HIGH',
+              rule: 'drop http ... (msg:"ET WEB_SPECIFIC_APPS SQL Injection -- SELECT"; content:"SELECT"; content:"FROM"; sid:6400026;)' },
+            { id: 27, sid: '6400027', name: 'SQL Injection UNION SELECT', cat: 'WEB-ATTACK', catClass: 'web', endpoint: '/ngfw-test/test/6400027', severity: 'HIGH',
+              rule: 'drop http ... (msg:"ET WEB_SPECIFIC_APPS SQL Injection -- UNION SELECT"; content:"UNION"; content:"SELECT"; sid:6400027;)' },
+            { id: 28, sid: '6400028', name: 'SQL Injection INSERT', cat: 'WEB-ATTACK', catClass: 'web', endpoint: '/ngfw-test/test/6400028', severity: 'HIGH',
+              rule: 'drop http ... (msg:"ET WEB_SPECIFIC_APPS SQL Injection -- INSERT"; content:"INSERT"; content:"INTO"; sid:6400028;)' },
+            { id: 29, sid: '6400032', name: 'Cool Java Exploit Kit', cat: 'EXPLOIT-KIT', catClass: 'exploit', endpoint: '/ngfw-test/test/6400032', severity: 'CRITICAL',
+              rule: 'drop http ... (msg:"ET EXPLOIT_KIT Cool Java Exploit"; content:"PK"; content:"SunJCE.class"; sid:6400032;)' },
+            { id: 30, sid: '6400033', name: 'Suspicious EXE from File Share', cat: 'MALWARE', catClass: 'malware', endpoint: '/ngfw-test/test/6400033', severity: 'HIGH',
+              rule: 'drop http ... (msg:"ET HUNTING SUSPICIOUS EXE Download from file share"; content:".exe"; content:"a.pomf.cat"; sid:6400033;)' }
         ];
 
-        function getSeverityClass(severity) {
-            return {
-                'CRITICAL': 'severity-critical',
-                'HIGH': 'severity-high',
-                'MEDIUM': 'severity-medium',
-                'LOW': 'severity-low'
-            }[severity] || 'bg-secondary';
-        }
+        let BASE_URL = '';
+        function getSeverityClass(s) { return { 'CRITICAL': 'severity-critical', 'HIGH': 'severity-high', 'MEDIUM': 'severity-medium' }[s] || 'bg-secondary'; }
+        function getCatClass(c) { return { 'malware': 'cat-malware', 'virus': 'cat-virus', 'exploit': 'cat-exploit', 'web': 'cat-web', 'sandbox': 'cat-sandbox' }[c] || ''; }
 
-        function getCatClass(cat) {
-            return {
-                'malware': 'cat-malware',
-                'file': 'cat-file',
-                'web': 'cat-web',
-                'leak': 'cat-leak',
-                'c2': 'cat-c2'
-            }[cat] || '';
-        }
-
-        function renderTestCards() {
-            const grid = document.getElementById('testGrid');
-            grid.innerHTML = TEST_CASES.map(tc => `
+        function renderGrid() {
+            document.getElementById('testGrid').innerHTML = TEST_CASES.map(tc => `
                 <div class="test-card ${getCatClass(tc.catClass)}">
                     <div class="test-card-header">
-                        <div class="test-number">${tc.id}</div>
+                        <div class="test-num">${tc.id}</div>
                         <div class="flex-grow-1">
-                            <div class="fw-bold">${tc.name}</div>
+                            <div class="fw-bold" style="font-size:0.95rem">${tc.name}</div>
                             <small class="text-secondary">${tc.cat}</small>
                         </div>
                         <span class="sid-badge">SID ${tc.sid}</span>
                     </div>
                     <div class="test-card-body">
-                        <p class="text-secondary mb-2" style="font-size: 0.9rem;">${tc.desc}</p>
                         <div class="d-flex gap-2 mb-2">
                             <span class="badge ${getSeverityClass(tc.severity)}">${tc.severity}</span>
-                            <span class="badge bg-dark">Expected: ${tc.expected}</span>
                         </div>
-                        <div class="endpoint">${tc.endpoint}</div>
-                        <div class="rule-info">${tc.rule}</div>
+                        <div class="endpoint">${BASE_URL}${tc.endpoint}</div>
+                        <div class="rule-box">${tc.rule}</div>
                     </div>
                     <div class="test-card-footer">
-                        <button class="btn-test flex-grow-1" onclick="runTest(${tc.id})">
-                            <i class="fas fa-play me-1"></i>Run Test
-                        </button>
-                        <a href="${tc.endpoint}" target="_blank" class="btn-view">
-                            <i class="fas fa-external-link-alt"></i>
-                        </a>
+                        <button class="btn-test flex-grow-1" onclick="runTest(${tc.id})"><i class="fas fa-play me-1"></i>Test</button>
+                        <a href="${tc.endpoint}" target="_blank" class="btn-open"><i class="fas fa-external-link-alt"></i></a>
                     </div>
                 </div>
             `).join('');
         }
 
-        function showResults() {
-            document.getElementById('resultsPanel').classList.remove('hidden');
-        }
-
-        function toggleResults() {
-            document.getElementById('resultsPanel').classList.toggle('hidden');
-        }
-
-        function clearResults() {
-            document.getElementById('resultsBody').innerHTML = '';
-        }
+        function showResults() { document.getElementById('resultsPanel').classList.add('show'); }
+        function toggleResults() { document.getElementById('resultsPanel').classList.toggle('show'); }
+        function clearResults() { document.getElementById('resultsBody').innerHTML = ''; }
 
         async function runTest(id) {
             const tc = TEST_CASES.find(t => t.id === id);
             if (!tc) return;
-
             showResults();
-            const resultsBody = document.getElementById('resultsBody');
+            const body = document.getElementById('resultsBody');
+            const rid = `r-${tc.id}-${Date.now()}`;
+            body.insertAdjacentHTML('afterbegin', `<div class="result-item" id="${rid}"><i class="fas fa-spinner fa-spin me-2"></i>Testing SID ${tc.sid}...</div>`);
             
-            const resultId = `result-${tc.id}-${Date.now()}`;
-            const pendingHtml = `
-                <div class="result-item pending" id="${resultId}">
-                    <div class="result-title">
-                        <span class="test-number" style="width:30px;height:30px;font-size:0.8rem;">${tc.id}</span>
-                        <strong>SID ${tc.sid}: ${tc.name}</strong>
-                        <span class="badge bg-warning text-dark"><i class="fas fa-spinner fa-spin me-1"></i>Testing...</span>
-                    </div>
-                </div>
-            `;
-            resultsBody.insertAdjacentHTML('afterbegin', pendingHtml);
-
             try {
-                const startTime = Date.now();
-                const response = await fetch(tc.endpoint);
-                const elapsed = Date.now() - startTime;
-                const status = response.status;
-                
-                const resultEl = document.getElementById(resultId);
-                resultEl.className = 'result-item success';
-                resultEl.innerHTML = `
-                    <div class="result-title">
-                        <span class="test-number" style="width:30px;height:30px;font-size:0.8rem;">${tc.id}</span>
-                        <strong>SID ${tc.sid}: ${tc.name}</strong>
-                        <span class="badge bg-success"><i class="fas fa-check me-1"></i>Request Sent</span>
-                        <span class="badge ${getSeverityClass(tc.severity)}">${tc.severity}</span>
+                const start = Date.now();
+                const res = await fetch(tc.endpoint);
+                const ms = Date.now() - start;
+                document.getElementById(rid).innerHTML = `
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <strong><span class="badge bg-primary me-2">#${tc.id}</span>SID ${tc.sid}: ${tc.name}</strong>
+                        <span class="badge bg-success">HTTP ${res.status} - ${ms}ms</span>
                     </div>
-                    <div class="result-details">
-                        <div class="result-detail-item">
-                            <label>Endpoint</label>
-                            <code style="color: var(--accent-green);">${tc.endpoint}</code>
-                        </div>
-                        <div class="result-detail-item">
-                            <label>HTTP Status</label>
-                            <strong>${status}</strong>
-                        </div>
-                        <div class="result-detail-item">
-                            <label>Response Time</label>
-                            <strong>${elapsed}ms</strong>
-                        </div>
-                        <div class="result-detail-item">
-                            <label>Expected Action</label>
-                            <strong style="color: var(--accent-red);">${tc.expected}</strong>
-                        </div>
-                    </div>
-                    <div class="mt-2 p-2 rounded" style="background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3);">
-                        <i class="fas fa-exclamation-triangle text-danger me-2"></i>
-                        <strong>Check NGFW Dashboard:</strong> Tìm alert/block với <strong>SID ${tc.sid}</strong>
-                    </div>
+                    <div class="small text-warning"><i class="fas fa-exclamation-triangle me-1"></i>Check NGFW Dashboard for SID <strong>${tc.sid}</strong></div>
                 `;
-            } catch (error) {
-                const resultEl = document.getElementById(resultId);
-                resultEl.className = 'result-item blocked';
-                resultEl.innerHTML = `
-                    <div class="result-title">
-                        <span class="test-number" style="width:30px;height:30px;font-size:0.8rem;">${tc.id}</span>
-                        <strong>SID ${tc.sid}: ${tc.name}</strong>
-                        <span class="badge bg-danger"><i class="fas fa-ban me-1"></i>Blocked/Failed</span>
-                    </div>
-                    <div class="mt-2 p-2 rounded" style="background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.3);">
-                        <i class="fas fa-shield-alt text-success me-2"></i>
-                        <strong>Có thể NGFW đã block request này!</strong> Check logs với SID ${tc.sid}
-                    </div>
-                    <small class="text-secondary">Error: ${error.message}</small>
+            } catch (e) {
+                document.getElementById(rid).className = 'result-item blocked';
+                document.getElementById(rid).innerHTML = `
+                    <strong><span class="badge bg-danger me-2">#${tc.id}</span>SID ${tc.sid} - BLOCKED/FAILED</strong>
+                    <div class="small text-success mt-1"><i class="fas fa-shield-alt me-1"></i>NGFW có thể đã chặn! Check logs với SID ${tc.sid}</div>
                 `;
             }
         }
 
         async function runAllTests() {
-            if (!confirm('Chạy tất cả 20 tests? Sẽ tạo nhiều security alerts trên NGFW.')) return;
-            
-            showResults();
-            clearResults();
-            
-            for (const tc of TEST_CASES) {
-                await runTest(tc.id);
-                await new Promise(r => setTimeout(r, 300));
-            }
+            if (!confirm('Run all 30 tests? This will trigger multiple security alerts.')) return;
+            showResults(); clearResults();
+            for (const tc of TEST_CASES) { await runTest(tc.id); await new Promise(r => setTimeout(r, 200)); }
         }
 
-        // Initialize
-        renderTestCards();
+        BASE_URL = window.location.origin;
+        document.getElementById('baseUrl').textContent = BASE_URL;
+        renderGrid();
     </script>
 </body>
 </html>

