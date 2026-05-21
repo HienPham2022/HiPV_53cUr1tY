@@ -8,553 +8,658 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
         :root {
-            --bg-dark: #0d1117;
-            --bg-card: #161b22;
-            --border-color: #30363d;
-            --text-primary: #e6edf3;
-            --text-secondary: #8b949e;
-            --accent-red: #f85149;
-            --accent-orange: #d29922;
-            --accent-green: #3fb950;
-            --accent-blue: #58a6ff;
-            --accent-purple: #a371f7;
+            --bg-dark: #0f172a;
+            --bg-card: #1e293b;
+            --bg-card-hover: #334155;
+            --border-color: #475569;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --accent-red: #ef4444;
+            --accent-orange: #f97316;
+            --accent-yellow: #eab308;
+            --accent-green: #22c55e;
+            --accent-blue: #3b82f6;
+            --accent-purple: #a855f7;
+            --accent-cyan: #06b6d4;
         }
+        * { box-sizing: border-box; }
         body {
             background: var(--bg-dark);
             color: var(--text-primary);
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            min-height: 100vh;
         }
-        .navbar { background: var(--bg-card) !important; border-bottom: 1px solid var(--border-color); }
-        .card {
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-        }
-        .card-header {
-            background: rgba(255,255,255,0.05);
+        
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, #1e3a5f 0%, #0f172a 100%);
             border-bottom: 1px solid var(--border-color);
+            padding: 20px 0;
         }
-        .table { color: var(--text-primary); }
-        .table-dark { --bs-table-bg: var(--bg-card); }
-        .badge-critical { background: var(--accent-red); }
-        .badge-high { background: var(--accent-orange); }
-        .badge-medium { background: var(--accent-blue); }
-        .badge-low { background: var(--accent-green); }
-        .category-malware { border-left: 4px solid var(--accent-red); }
-        .category-file { border-left: 4px solid var(--accent-orange); }
-        .category-web { border-left: 4px solid var(--accent-purple); }
-        .category-leak { border-left: 4px solid var(--accent-blue); }
-        .category-c2 { border-left: 4px solid #ff6b6b; }
-        .btn-test { min-width: 100px; }
-        .sid-badge {
-            font-family: 'Monaco', 'Consolas', monospace;
-            background: #238636;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 0.85rem;
+        .header h1 { font-size: 1.8rem; margin: 0; }
+        
+        /* Topology */
+        .topology-container {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 25px;
         }
-        .test-number {
-            width: 40px;
-            height: 40px;
-            background: var(--accent-blue);
-            border-radius: 50%;
+        .topology-flow {
             display: flex;
             align-items: center;
             justify-content: center;
-            font-weight: bold;
-            font-size: 1.1rem;
+            gap: 15px;
+            flex-wrap: wrap;
         }
-        .endpoint-code {
-            background: #0d1117;
-            padding: 4px 10px;
-            border-radius: 4px;
-            font-family: monospace;
-            color: var(--accent-green);
-        }
-        .result-box {
-            background: #0d1117;
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            padding: 15px;
-            margin-top: 10px;
-            font-family: monospace;
-            font-size: 0.9rem;
-            max-height: 200px;
-            overflow-y: auto;
-        }
-        .topology {
-            background: linear-gradient(135deg, #1a1f35 0%, #0d1117 100%);
-            border-radius: 10px;
-            padding: 20px;
-        }
-        .topology-box {
-            background: var(--bg-card);
+        .topology-node {
+            background: linear-gradient(145deg, #334155, #1e293b);
             border: 2px solid var(--accent-blue);
+            border-radius: 12px;
+            padding: 20px 30px;
+            text-align: center;
+            min-width: 140px;
+        }
+        .topology-node.ngfw { border-color: var(--accent-red); }
+        .topology-node.server { border-color: var(--accent-green); }
+        .topology-node i { font-size: 2rem; margin-bottom: 8px; }
+        .topology-arrow { font-size: 1.5rem; color: var(--accent-cyan); }
+        
+        /* Test Cases Grid */
+        .test-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+            gap: 15px;
+        }
+        .test-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            overflow: hidden;
+            transition: all 0.2s ease;
+        }
+        .test-card:hover {
+            border-color: var(--accent-blue);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+        }
+        .test-card-header {
+            background: rgba(255,255,255,0.03);
+            padding: 12px 15px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .test-number {
+            width: 36px;
+            height: 36px;
+            background: var(--accent-blue);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1rem;
+            flex-shrink: 0;
+        }
+        .test-card-body { padding: 15px; }
+        .test-card-footer {
+            padding: 12px 15px;
+            background: rgba(0,0,0,0.2);
+            display: flex;
+            gap: 8px;
+        }
+        
+        /* SID Badge */
+        .sid-badge {
+            background: linear-gradient(135deg, #059669, #047857);
+            padding: 5px 10px;
+            border-radius: 6px;
+            font-family: 'Monaco', 'Consolas', monospace;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        
+        /* Severity Badges */
+        .severity-critical { background: var(--accent-red); }
+        .severity-high { background: var(--accent-orange); }
+        .severity-medium { background: var(--accent-yellow); color: #000; }
+        .severity-low { background: var(--accent-green); }
+        
+        /* Category Colors */
+        .cat-malware { border-left: 4px solid var(--accent-red); }
+        .cat-file { border-left: 4px solid var(--accent-orange); }
+        .cat-web { border-left: 4px solid var(--accent-purple); }
+        .cat-leak { border-left: 4px solid var(--accent-cyan); }
+        .cat-c2 { border-left: 4px solid #f43f5e; }
+        
+        /* Endpoint Code */
+        .endpoint {
+            background: #0f172a;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-family: 'Monaco', monospace;
+            font-size: 0.8rem;
+            color: var(--accent-green);
+            margin: 10px 0;
+            word-break: break-all;
+        }
+        
+        /* Rule Info */
+        .rule-info {
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 6px;
+            padding: 10px;
+            font-family: monospace;
+            font-size: 0.72rem;
+            color: var(--accent-cyan);
+            max-height: 60px;
+            overflow-y: auto;
+            line-height: 1.4;
+        }
+        
+        /* Results Panel */
+        .results-panel {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #1e293b;
+            border-top: 3px solid var(--accent-blue);
+            max-height: 350px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            z-index: 1000;
+            transition: transform 0.3s ease;
+        }
+        .results-panel.hidden { transform: translateY(100%); }
+        .results-header {
+            background: #0f172a;
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            flex-shrink: 0;
+        }
+        .results-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px 20px;
+        }
+        .result-item {
+            background: #0f172a;
+            border: 1px solid #334155;
             border-radius: 8px;
             padding: 15px;
-            text-align: center;
+            margin-bottom: 12px;
         }
-        .topology-arrow {
-            color: var(--accent-green);
-            font-size: 2rem;
+        .result-item.success { border-left: 4px solid var(--accent-green); }
+        .result-item.blocked { border-left: 4px solid var(--accent-red); }
+        .result-item.pending { border-left: 4px solid var(--accent-yellow); }
+        
+        .result-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
         }
-        .stats-card {
-            background: linear-gradient(135deg, #238636 0%, #1a7f37 100%);
+        .result-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            font-size: 0.9rem;
+        }
+        .result-detail-item {
+            background: rgba(255,255,255,0.05);
+            padding: 8px 12px;
+            border-radius: 6px;
+        }
+        .result-detail-item label {
+            color: var(--text-secondary);
+            font-size: 0.75rem;
+            display: block;
+            margin-bottom: 3px;
+        }
+        
+        /* Buttons */
+        .btn-test {
+            background: linear-gradient(135deg, #dc2626, #b91c1c);
+            border: none;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        .btn-test:hover {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            transform: scale(1.02);
+        }
+        .btn-view {
+            background: transparent;
+            border: 1px solid var(--accent-blue);
+            color: var(--accent-blue);
+            padding: 8px 16px;
+            border-radius: 6px;
+        }
+        .btn-view:hover { background: var(--accent-blue); color: white; }
+        
+        /* Stats */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        .stat-card {
+            background: var(--bg-card);
             border-radius: 10px;
             padding: 20px;
+            text-align: center;
+        }
+        .stat-card h2 { font-size: 2rem; margin: 0; }
+        .stat-card p { margin: 5px 0 0; color: var(--text-secondary); font-size: 0.85rem; }
+        
+        /* Run All Button */
+        .run-all-btn {
+            background: linear-gradient(135deg, #059669, #047857);
+            border: none;
+            color: white;
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+        }
+        .run-all-btn:hover { background: linear-gradient(135deg, #10b981, #059669); }
+        
+        /* Badge */
+        .badge { font-weight: 500; padding: 5px 10px; border-radius: 5px; }
+        
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-dark); }
+        ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #64748b; }
+        
+        /* Footer spacing for results panel */
+        .content-wrapper { padding-bottom: 100px; }
+        
+        @media (max-width: 768px) {
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+            .test-grid { grid-template-columns: 1fr; }
+            .topology-flow { flex-direction: column; }
+            .topology-arrow { transform: rotate(90deg); }
         }
     </style>
 </head>
 <body>
-    <nav class="navbar navbar-dark sticky-top">
+    <!-- Header -->
+    <div class="header">
         <div class="container">
-            <span class="navbar-brand">
-                <i class="fas fa-shield-alt me-2"></i>
-                NGFW Test Suite
-            </span>
-            <span class="text-secondary">Suricata Rules: SID 5900006 - 6400033</span>
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+                <div>
+                    <h1><i class="fas fa-shield-alt text-danger me-2"></i>NGFW Test Suite</h1>
+                    <p class="text-secondary mb-0">Suricata Rules Testing • SID 5900006 - 6400033</p>
+                </div>
+                <button class="run-all-btn" onclick="runAllTests()">
+                    <i class="fas fa-play me-2"></i>Run All 20 Tests
+                </button>
+            </div>
         </div>
-    </nav>
+    </div>
 
-    <div class="container py-4">
-        <!-- Header -->
-        <div class="text-center mb-4">
-            <h1 class="display-5 fw-bold">
-                <i class="fas fa-fire-alt text-danger me-2"></i>
-                Next Generation Firewall Testing
-            </h1>
-            <p class="lead text-secondary">20 Test Cases cho Suricata/Snort IDS/IPS Rules</p>
-        </div>
-
+    <div class="container py-4 content-wrapper">
         <!-- Topology -->
-        <div class="topology mb-4">
-            <h5 class="mb-3"><i class="fas fa-network-wired me-2"></i>Test Topology</h5>
-            <div class="row align-items-center justify-content-center">
-                <div class="col-auto">
-                    <div class="topology-box">
-                        <i class="fas fa-laptop fa-2x mb-2 text-info"></i>
-                        <div><strong>Client</strong></div>
-                        <small class="text-secondary">Test Browser</small>
-                    </div>
+        <div class="topology-container">
+            <h5 class="mb-3"><i class="fas fa-network-wired me-2"></i>Network Topology</h5>
+            <div class="topology-flow">
+                <div class="topology-node">
+                    <i class="fas fa-laptop text-info"></i>
+                    <div class="fw-bold">Client</div>
+                    <small class="text-secondary">Browser</small>
                 </div>
-                <div class="col-auto topology-arrow">
-                    <i class="fas fa-arrow-right"></i>
+                <div class="topology-arrow"><i class="fas fa-arrow-right"></i></div>
+                <div class="topology-node ngfw">
+                    <i class="fas fa-shield-alt text-danger"></i>
+                    <div class="fw-bold">NGFW</div>
+                    <small class="text-secondary">Suricata IDS/IPS</small>
                 </div>
-                <div class="col-auto">
-                    <div class="topology-box" style="border-color: var(--accent-red);">
-                        <i class="fas fa-shield-alt fa-2x mb-2 text-danger"></i>
-                        <div><strong>NGFW</strong></div>
-                        <small class="text-secondary">Suricata IDS/IPS</small>
-                    </div>
-                </div>
-                <div class="col-auto topology-arrow">
-                    <i class="fas fa-arrow-right"></i>
-                </div>
-                <div class="col-auto">
-                    <div class="topology-box" style="border-color: var(--accent-green);">
-                        <i class="fas fa-server fa-2x mb-2 text-success"></i>
-                        <div><strong>Web Server</strong></div>
-                        <small class="text-secondary">This App</small>
-                    </div>
+                <div class="topology-arrow"><i class="fas fa-arrow-right"></i></div>
+                <div class="topology-node server">
+                    <i class="fas fa-server text-success"></i>
+                    <div class="fw-bold">Web Server</div>
+                    <small class="text-secondary">This App</small>
                 </div>
             </div>
         </div>
 
         <!-- Stats -->
-        <div class="row mb-4">
-            <div class="col-md-3">
-                <div class="stats-card text-white">
-                    <h3 class="mb-0">20</h3>
-                    <small>Test Cases</small>
-                </div>
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h2 class="text-primary">20</h2>
+                <p>Test Cases</p>
             </div>
-            <div class="col-md-3">
-                <div class="card p-3">
-                    <h3 class="mb-0 text-danger">5</h3>
-                    <small class="text-secondary">Malware Tests</small>
-                </div>
+            <div class="stat-card">
+                <h2 class="text-danger">3</h2>
+                <p>Malware</p>
             </div>
-            <div class="col-md-3">
-                <div class="card p-3">
-                    <h3 class="mb-0 text-warning">4</h3>
-                    <small class="text-secondary">Web Attack Tests</small>
-                </div>
+            <div class="stat-card">
+                <h2 class="text-warning">5</h2>
+                <p>Suspicious Files</p>
             </div>
-            <div class="col-md-3">
-                <div class="card p-3">
-                    <h3 class="mb-0 text-info">6</h3>
-                    <small class="text-secondary">Data Leak Tests</small>
-                </div>
+            <div class="stat-card">
+                <h2 class="text-purple" style="color: var(--accent-purple);">4</h2>
+                <p>Web Attacks</p>
+            </div>
+            <div class="stat-card">
+                <h2 class="text-info">8</h2>
+                <p>Data Leak & C2</p>
             </div>
         </div>
 
-        <!-- Test Cases Table -->
-        <div class="card mb-4">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h5 class="mb-0"><i class="fas fa-list-check me-2"></i>Test Cases</h5>
-                <button class="btn btn-outline-success btn-sm" onclick="runAllTests()">
-                    <i class="fas fa-play me-1"></i>Run All Tests
+        <!-- Test Cases Title -->
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h4 class="mb-0"><i class="fas fa-list-check me-2"></i>20 Test Cases</h4>
+            <div class="text-secondary">
+                <span class="me-3"><i class="fas fa-circle text-danger me-1"></i>Malware</span>
+                <span class="me-3"><i class="fas fa-circle text-warning me-1"></i>File</span>
+                <span class="me-3" style="color: var(--accent-purple);"><i class="fas fa-circle me-1"></i>Web</span>
+                <span class="me-3"><i class="fas fa-circle text-info me-1"></i>Leak</span>
+                <span><i class="fas fa-circle me-1" style="color: #f43f5e;"></i>C2</span>
+            </div>
+        </div>
+
+        <!-- Test Cases Grid -->
+        <div class="test-grid" id="testGrid">
+            <!-- Generated by JS -->
+        </div>
+    </div>
+
+    <!-- Results Panel -->
+    <div class="results-panel hidden" id="resultsPanel">
+        <div class="results-header">
+            <div>
+                <h5 class="mb-0"><i class="fas fa-terminal me-2"></i>Test Results</h5>
+            </div>
+            <div>
+                <button class="btn btn-sm btn-outline-secondary me-2" onclick="clearResults()">
+                    <i class="fas fa-trash me-1"></i>Clear
+                </button>
+                <button class="btn btn-sm btn-outline-light" onclick="toggleResults()">
+                    <i class="fas fa-chevron-down"></i>
                 </button>
             </div>
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table table-dark table-hover mb-0">
-                        <thead>
-                            <tr>
-                                <th width="50">#</th>
-                                <th width="100">SID</th>
-                                <th>Test Name</th>
-                                <th width="120">Category</th>
-                                <th width="100">Severity</th>
-                                <th width="100">Expected</th>
-                                <th width="120">Action</th>
-                            </tr>
-                        </thead>
-                        <tbody id="testCasesTable">
-                            <!-- Populated by JavaScript -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
         </div>
-
-        <!-- Detailed Test Cards -->
-        <h4 class="mb-3"><i class="fas fa-vial me-2"></i>Chi tiết từng Test Case</h4>
-        <div class="row" id="testCardsContainer">
-            <!-- Populated by JavaScript -->
-        </div>
-
-        <!-- Results Panel -->
-        <div class="card mt-4" id="resultsPanel" style="display:none;">
-            <div class="card-header">
-                <h5 class="mb-0"><i class="fas fa-clipboard-check me-2"></i>Test Results</h5>
-            </div>
-            <div class="card-body">
-                <div class="result-box" id="resultsContent"></div>
-            </div>
-        </div>
-
-        <!-- Instructions -->
-        <div class="card mt-4">
-            <div class="card-header">
-                <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Hướng dẫn Test</h5>
-            </div>
-            <div class="card-body">
-                <ol>
-                    <li><strong>Đảm bảo Client kết nối qua NGFW</strong> - Traffic phải đi qua firewall</li>
-                    <li><strong>Click "Test" button</strong> - Gửi request đến endpoint tương ứng</li>
-                    <li><strong>Kiểm tra NGFW Dashboard</strong> - Tìm alert/block với SID tương ứng</li>
-                    <li><strong>So sánh Expected vs Actual</strong> - Verify hành vi đúng như mong đợi</li>
-                </ol>
-                <div class="alert alert-warning">
-                    <i class="fas fa-exclamation-triangle me-2"></i>
-                    <strong>Lưu ý:</strong> Các test này chỉ mô phỏng patterns. NGFW cần có rules tương ứng để detect.
-                </div>
-            </div>
-        </div>
-
-        <div class="text-center mt-4 text-secondary">
-            <small>HiPV Security - NGFW Testing Suite v1.0</small>
+        <div class="results-body" id="resultsBody">
+            <!-- Results will appear here -->
         </div>
     </div>
 
     <script>
         const TEST_CASES = [
-            {
-                id: 1, sid: '5900006', name: 'EICAR Test File Detection',
-                category: 'Malware', catClass: 'malware',
-                description: 'Standard antivirus test file - EICAR pattern detection via HTTP download',
-                endpoint: '/ngfw-test/eicar.com', method: 'GET',
-                expectedAction: 'BLOCK', severity: 'HIGH',
-                ruleInfo: 'alert http any any -> any any (msg:"MALWARE EICAR Test File"; content:"X5O!P%@AP[4\\PZX54(P^)7CC)7}"; sid:5900006;)'
-            },
-            {
-                id: 2, sid: '5900007', name: 'EICAR in ZIP Archive',
-                category: 'Malware', catClass: 'malware',
-                description: 'EICAR test file embedded in ZIP archive - tests archive inspection capability',
-                endpoint: '/ngfw-test/eicar.zip', method: 'GET',
-                expectedAction: 'BLOCK', severity: 'HIGH',
-                ruleInfo: 'alert http any any -> any any (msg:"MALWARE EICAR in Archive"; file_data; content:"EICAR-STANDARD-ANTIVIRUS-TEST-FILE"; sid:5900007;)'
-            },
-            {
-                id: 3, sid: '5900008', name: 'EICAR Base64 Encoded',
-                category: 'Malware', catClass: 'malware',
-                description: 'EICAR test file with Base64 encoding - tests decoding capability',
-                endpoint: '/ngfw-test/eicar-b64', method: 'GET',
-                expectedAction: 'BLOCK', severity: 'HIGH',
-                ruleInfo: 'alert http any any -> any any (msg:"MALWARE EICAR Base64"; content:"WDVPIVAlQEFQWzRcUFpYNTQ="; sid:5900008;)'
-            },
-            {
-                id: 4, sid: '6100001', name: 'EXE File Download via HTTP',
-                category: 'Suspicious File', catClass: 'file',
-                description: 'Windows executable download over unencrypted HTTP - potential malware delivery vector',
-                endpoint: '/ngfw-test/download/test.exe', method: 'GET',
-                expectedAction: 'ALERT/BLOCK', severity: 'MEDIUM',
-                ruleInfo: 'alert http any any -> any any (msg:"POLICY Executable Download"; content:"MZ"; offset:0; depth:2; content:".exe"; nocase; sid:6100001;)'
-            },
-            {
-                id: 5, sid: '6100002', name: 'DLL File Download',
-                category: 'Suspicious File', catClass: 'file',
-                description: 'Dynamic Link Library download - commonly used in DLL hijacking attacks',
-                endpoint: '/ngfw-test/download/test.dll', method: 'GET',
-                expectedAction: 'ALERT/BLOCK', severity: 'MEDIUM',
-                ruleInfo: 'alert http any any -> any any (msg:"POLICY DLL Download"; content:".dll"; nocase; content:"MZ"; sid:6100002;)'
-            },
-            {
-                id: 6, sid: '6100003', name: 'SCR (Screensaver) Download',
-                category: 'Suspicious File', catClass: 'file',
-                description: 'Screensaver file download - commonly used to disguise malware executables',
-                endpoint: '/ngfw-test/download/test.scr', method: 'GET',
-                expectedAction: 'ALERT/BLOCK', severity: 'HIGH',
-                ruleInfo: 'alert http any any -> any any (msg:"MALWARE Screensaver Download"; content:".scr"; nocase; content:"MZ"; sid:6100003;)'
-            },
-            {
-                id: 7, sid: '6100004', name: 'BAT/CMD Script Download',
-                category: 'Suspicious File', catClass: 'file',
-                description: 'Batch script download - can execute arbitrary system commands',
-                endpoint: '/ngfw-test/download/test.bat', method: 'GET',
-                expectedAction: 'ALERT/BLOCK', severity: 'HIGH',
-                ruleInfo: 'alert http any any -> any any (msg:"POLICY Batch Script Download"; content:".bat"; nocase; content:"@echo"; sid:6100004;)'
-            },
-            {
-                id: 8, sid: '6100005', name: 'PowerShell Script Download',
-                category: 'Suspicious File', catClass: 'file',
-                description: 'PS1 script download - commonly used in fileless malware and living-off-the-land attacks',
-                endpoint: '/ngfw-test/download/test.ps1', method: 'GET',
-                expectedAction: 'ALERT/BLOCK', severity: 'HIGH',
-                ruleInfo: 'alert http any any -> any any (msg:"MALWARE PowerShell Script"; content:".ps1"; content:"Invoke-"; sid:6100005;)'
-            },
-            {
-                id: 9, sid: '6200001', name: 'SQL Injection Error in Response',
-                category: 'Web Attack', catClass: 'web',
-                description: 'Server response containing SQL error messages - indicates successful SQLi exploitation',
-                endpoint: '/ngfw-test/vuln/sqli-error', method: 'GET',
-                expectedAction: 'ALERT', severity: 'HIGH',
-                ruleInfo: 'alert http any any -> any any (msg:"WEB-APP SQL Injection Error"; content:"mysql_query"; content:"SQL syntax"; sid:6200001;)'
-            },
-            {
-                id: 10, sid: '6200002', name: 'XSS Pattern in Response',
-                category: 'Web Attack', catClass: 'web',
-                description: 'Cross-Site Scripting pattern detected in HTTP response body',
-                endpoint: '/ngfw-test/vuln/xss-reflect', method: 'GET',
-                expectedAction: 'ALERT', severity: 'MEDIUM',
-                ruleInfo: 'alert http any any -> any any (msg:"WEB-APP XSS Pattern"; content:"<script>"; content:"alert("; sid:6200002;)'
-            },
-            {
-                id: 11, sid: '6200003', name: 'Directory Traversal Pattern',
-                category: 'Web Attack', catClass: 'web',
-                description: 'Path traversal sequences in response - potential Local File Inclusion (LFI) vulnerability',
-                endpoint: '/ngfw-test/vuln/path-traversal', method: 'GET',
-                expectedAction: 'ALERT', severity: 'HIGH',
-                ruleInfo: 'alert http any any -> any any (msg:"WEB-APP Path Traversal"; content:"../../../"; content:"/etc/passwd"; sid:6200003;)'
-            },
-            {
-                id: 12, sid: '6200004', name: 'Command Injection Output',
-                category: 'Web Attack', catClass: 'web',
-                description: 'Shell command output in response - indicates Remote Code Execution (RCE) vulnerability',
-                endpoint: '/ngfw-test/vuln/cmd-injection', method: 'GET',
-                expectedAction: 'ALERT', severity: 'CRITICAL',
-                ruleInfo: 'alert http any any -> any any (msg:"WEB-APP Command Injection"; content:"whoami"; content:"/bin/sh"; sid:6200004;)'
-            },
-            {
-                id: 13, sid: '6300001', name: 'Credit Card Number Exposure',
-                category: 'Data Leak', catClass: 'leak',
-                description: 'Credit card pattern detected in HTTP response - PCI-DSS compliance violation',
-                endpoint: '/ngfw-test/leak/credit-card', method: 'GET',
-                expectedAction: 'ALERT', severity: 'CRITICAL',
-                ruleInfo: 'alert http any any -> any any (msg:"DATA-LEAK Credit Card"; pcre:"/\\b(?:4[0-9]{12}(?:[0-9]{3})?|5[1-5][0-9]{14})\\b/"; sid:6300001;)'
-            },
-            {
-                id: 14, sid: '6300002', name: 'SSN Pattern Exposure',
-                category: 'Data Leak', catClass: 'leak',
-                description: 'Social Security Number pattern in response - Personally Identifiable Information (PII) leak',
-                endpoint: '/ngfw-test/leak/ssn', method: 'GET',
-                expectedAction: 'ALERT', severity: 'CRITICAL',
-                ruleInfo: 'alert http any any -> any any (msg:"DATA-LEAK SSN Pattern"; pcre:"/\\b[0-9]{3}-[0-9]{2}-[0-9]{4}\\b/"; sid:6300002;)'
-            },
-            {
-                id: 15, sid: '6300003', name: 'Private Key Exposure',
-                category: 'Data Leak', catClass: 'leak',
-                description: 'RSA/SSH private key in HTTP response - critical cryptographic material breach',
-                endpoint: '/ngfw-test/leak/private-key', method: 'GET',
-                expectedAction: 'ALERT/BLOCK', severity: 'CRITICAL',
-                ruleInfo: 'alert http any any -> any any (msg:"DATA-LEAK Private Key"; content:"BEGIN RSA PRIVATE KEY"; sid:6300003;)'
-            },
-            {
-                id: 16, sid: '6300004', name: 'Password Hash Exposure',
-                category: 'Data Leak', catClass: 'leak',
-                description: 'Password hashes (MD5/SHA/bcrypt) in response - credential theft risk',
-                endpoint: '/ngfw-test/leak/password-hash', method: 'GET',
-                expectedAction: 'ALERT', severity: 'HIGH',
-                ruleInfo: 'alert http any any -> any any (msg:"DATA-LEAK Password Hash"; pcre:"/\\$[256]\\$[a-zA-Z0-9./]+\\$/"; sid:6300004;)'
-            },
-            {
-                id: 17, sid: '6400001', name: 'Malicious User-Agent Response',
-                category: 'C2/Malware', catClass: 'c2',
-                description: 'Response to known malicious user-agent patterns - botnet communication indicator',
-                endpoint: '/ngfw-test/c2/user-agent', method: 'GET',
-                expectedAction: 'ALERT', severity: 'HIGH',
-                ruleInfo: 'alert http any any -> any any (msg:"MALWARE Bot User-Agent"; content:"Trojan"; content:"botnet"; sid:6400001;)'
-            },
-            {
-                id: 18, sid: '6400002', name: 'Base64 Encoded C2 Payload',
-                category: 'C2/Malware', catClass: 'c2',
-                description: 'Large Base64 encoded data in response - possible Command & Control communication',
-                endpoint: '/ngfw-test/c2/b64-payload', method: 'GET',
-                expectedAction: 'ALERT', severity: 'MEDIUM',
-                ruleInfo: 'alert http any any -> any any (msg:"MALWARE Base64 C2"; content:"ZG93bmxvYWRfYW5kX2V4ZWN1dGU"; sid:6400002;)'
-            },
-            {
-                id: 19, sid: '6400003', name: 'Shellcode Pattern Detection',
-                category: 'C2/Malware', catClass: 'c2',
-                description: 'Hexadecimal shellcode pattern in HTTP response - active exploitation indicator',
-                endpoint: '/ngfw-test/c2/shellcode', method: 'GET',
-                expectedAction: 'BLOCK', severity: 'CRITICAL',
-                ruleInfo: 'alert http any any -> any any (msg:"SHELLCODE x86"; content:"|90 90 90 90|"; content:"|31 c0 50 68|"; sid:6400003;)'
-            },
-            {
-                id: 20, sid: '6400033', name: 'Webshell Detection',
-                category: 'C2/Malware', catClass: 'c2',
-                description: 'PHP/ASP/JSP webshell patterns in response - server compromise indicator',
-                endpoint: '/ngfw-test/c2/webshell', method: 'GET',
-                expectedAction: 'BLOCK', severity: 'CRITICAL',
-                ruleInfo: 'alert http any any -> any any (msg:"MALWARE Webshell"; content:"eval($_"; content:"shell_exec"; sid:6400033;)'
-            }
+            // MALWARE (1-3)
+            { id: 1, sid: '5900006', name: 'EICAR Test File Detection', cat: 'Malware', catClass: 'malware',
+              desc: 'EICAR pattern detection - Standard antivirus test file download via HTTP',
+              endpoint: '/ngfw-test/eicar.com', expected: 'BLOCK', severity: 'HIGH',
+              rule: 'alert http any any -> any any (msg:"MALWARE EICAR"; content:"X5O!P%@AP[4\\PZX54(P^)7CC)7}"; sid:5900006;)' },
+            
+            { id: 2, sid: '5900007', name: 'EICAR in ZIP Archive', cat: 'Malware', catClass: 'malware',
+              desc: 'EICAR trong file ZIP - Test khả năng inspect archive',
+              endpoint: '/ngfw-test/eicar.zip', expected: 'BLOCK', severity: 'HIGH',
+              rule: 'alert http any any -> any any (msg:"MALWARE EICAR Archive"; file_data; content:"EICAR"; sid:5900007;)' },
+            
+            { id: 3, sid: '5900008', name: 'EICAR Base64 Encoded', cat: 'Malware', catClass: 'malware',
+              desc: 'EICAR mã hóa Base64 - Test khả năng decode',
+              endpoint: '/ngfw-test/eicar-b64', expected: 'BLOCK', severity: 'HIGH',
+              rule: 'alert http any any -> any any (msg:"MALWARE EICAR B64"; content:"WDVPIVAlQEFQ"; sid:5900008;)' },
+
+            // SUSPICIOUS FILES (4-8)
+            { id: 4, sid: '6100001', name: 'EXE Download via HTTP', cat: 'Suspicious File', catClass: 'file',
+              desc: 'Download file .exe qua HTTP - Potential malware delivery',
+              endpoint: '/ngfw-test/download/test.exe', expected: 'ALERT', severity: 'MEDIUM',
+              rule: 'alert http any any -> any any (msg:"POLICY EXE Download"; content:"MZ"; depth:2; sid:6100001;)' },
+            
+            { id: 5, sid: '6100002', name: 'DLL File Download', cat: 'Suspicious File', catClass: 'file',
+              desc: 'Download file DLL - DLL hijacking vector',
+              endpoint: '/ngfw-test/download/test.dll', expected: 'ALERT', severity: 'MEDIUM',
+              rule: 'alert http any any -> any any (msg:"POLICY DLL Download"; content:".dll"; sid:6100002;)' },
+            
+            { id: 6, sid: '6100003', name: 'SCR Screensaver Download', cat: 'Suspicious File', catClass: 'file',
+              desc: 'Download file SCR - Disguised executable',
+              endpoint: '/ngfw-test/download/test.scr', expected: 'BLOCK', severity: 'HIGH',
+              rule: 'alert http any any -> any any (msg:"MALWARE SCR Download"; content:".scr"; sid:6100003;)' },
+            
+            { id: 7, sid: '6100004', name: 'BAT Script Download', cat: 'Suspicious File', catClass: 'file',
+              desc: 'Download batch script - Command execution',
+              endpoint: '/ngfw-test/download/test.bat', expected: 'ALERT', severity: 'HIGH',
+              rule: 'alert http any any -> any any (msg:"POLICY Batch Script"; content:"@echo"; sid:6100004;)' },
+            
+            { id: 8, sid: '6100005', name: 'PowerShell Script Download', cat: 'Suspicious File', catClass: 'file',
+              desc: 'Download PS1 script - Fileless malware vector',
+              endpoint: '/ngfw-test/download/test.ps1', expected: 'BLOCK', severity: 'HIGH',
+              rule: 'alert http any any -> any any (msg:"MALWARE PowerShell"; content:"Invoke-"; sid:6100005;)' },
+
+            // WEB ATTACKS (9-12)
+            { id: 9, sid: '6200001', name: 'SQL Injection Error', cat: 'Web Attack', catClass: 'web',
+              desc: 'SQL error trong response - SQLi vulnerability indicator',
+              endpoint: '/ngfw-test/vuln/sqli-error', expected: 'ALERT', severity: 'HIGH',
+              rule: 'alert http any any -> any any (msg:"WEB SQLi Error"; content:"SQL syntax"; sid:6200001;)' },
+            
+            { id: 10, sid: '6200002', name: 'XSS Pattern Response', cat: 'Web Attack', catClass: 'web',
+              desc: 'Cross-Site Scripting pattern trong response',
+              endpoint: '/ngfw-test/vuln/xss-reflect', expected: 'ALERT', severity: 'MEDIUM',
+              rule: 'alert http any any -> any any (msg:"WEB XSS"; content:"<script>"; content:"alert("; sid:6200002;)' },
+            
+            { id: 11, sid: '6200003', name: 'Path Traversal Response', cat: 'Web Attack', catClass: 'web',
+              desc: 'Directory traversal - LFI vulnerability indicator',
+              endpoint: '/ngfw-test/vuln/path-traversal', expected: 'ALERT', severity: 'HIGH',
+              rule: 'alert http any any -> any any (msg:"WEB LFI"; content:"../../../"; content:"/etc/passwd"; sid:6200003;)' },
+            
+            { id: 12, sid: '6200004', name: 'Command Injection Output', cat: 'Web Attack', catClass: 'web',
+              desc: 'Shell command output - RCE vulnerability indicator',
+              endpoint: '/ngfw-test/vuln/cmd-injection', expected: 'ALERT', severity: 'CRITICAL',
+              rule: 'alert http any any -> any any (msg:"WEB RCE"; content:"/bin/sh"; content:"whoami"; sid:6200004;)' },
+
+            // DATA LEAK (13-16)
+            { id: 13, sid: '6300001', name: 'Credit Card Exposure', cat: 'Data Leak', catClass: 'leak',
+              desc: 'Credit card numbers trong response - PCI-DSS violation',
+              endpoint: '/ngfw-test/leak/credit-card', expected: 'ALERT', severity: 'CRITICAL',
+              rule: 'alert http any any -> any any (msg:"DATA-LEAK CC"; pcre:"/4[0-9]{12}(?:[0-9]{3})?/"; sid:6300001;)' },
+            
+            { id: 14, sid: '6300002', name: 'SSN Pattern Exposure', cat: 'Data Leak', catClass: 'leak',
+              desc: 'Social Security Number leak - PII exposure',
+              endpoint: '/ngfw-test/leak/ssn', expected: 'ALERT', severity: 'CRITICAL',
+              rule: 'alert http any any -> any any (msg:"DATA-LEAK SSN"; pcre:"/[0-9]{3}-[0-9]{2}-[0-9]{4}/"; sid:6300002;)' },
+            
+            { id: 15, sid: '6300003', name: 'Private Key Exposure', cat: 'Data Leak', catClass: 'leak',
+              desc: 'RSA/SSH private key trong response - Critical breach',
+              endpoint: '/ngfw-test/leak/private-key', expected: 'BLOCK', severity: 'CRITICAL',
+              rule: 'alert http any any -> any any (msg:"DATA-LEAK PrivKey"; content:"BEGIN RSA PRIVATE KEY"; sid:6300003;)' },
+            
+            { id: 16, sid: '6300004', name: 'Password Hash Exposure', cat: 'Data Leak', catClass: 'leak',
+              desc: 'Password hashes trong response - Credential theft',
+              endpoint: '/ngfw-test/leak/password-hash', expected: 'ALERT', severity: 'HIGH',
+              rule: 'alert http any any -> any any (msg:"DATA-LEAK Hash"; pcre:"/\\$[256]\\$/"; sid:6300004;)' },
+
+            // C2 / MALWARE (17-20)
+            { id: 17, sid: '6400001', name: 'Malicious User-Agent', cat: 'C2/Malware', catClass: 'c2',
+              desc: 'Response to known malware user-agent - Bot communication',
+              endpoint: '/ngfw-test/c2/user-agent', expected: 'ALERT', severity: 'HIGH',
+              rule: 'alert http any any -> any any (msg:"MALWARE Bot UA"; content:"Trojan"; sid:6400001;)' },
+            
+            { id: 18, sid: '6400002', name: 'Base64 C2 Payload', cat: 'C2/Malware', catClass: 'c2',
+              desc: 'Base64 encoded C2 command - Malware communication',
+              endpoint: '/ngfw-test/c2/b64-payload', expected: 'ALERT', severity: 'MEDIUM',
+              rule: 'alert http any any -> any any (msg:"MALWARE C2 B64"; content:"ZG93bmxvYWQ="; sid:6400002;)' },
+            
+            { id: 19, sid: '6400003', name: 'Shellcode Pattern', cat: 'C2/Malware', catClass: 'c2',
+              desc: 'Hex shellcode trong response - Active exploitation',
+              endpoint: '/ngfw-test/c2/shellcode', expected: 'BLOCK', severity: 'CRITICAL',
+              rule: 'alert http any any -> any any (msg:"SHELLCODE x86"; content:"|90 90 90 90|"; sid:6400003;)' },
+            
+            { id: 20, sid: '6400033', name: 'Webshell Detection', cat: 'C2/Malware', catClass: 'c2',
+              desc: 'PHP/ASP/JSP webshell patterns - Server compromise',
+              endpoint: '/ngfw-test/c2/webshell', expected: 'BLOCK', severity: 'CRITICAL',
+              rule: 'alert http any any -> any any (msg:"MALWARE Webshell"; content:"eval($_"; content:"shell_exec"; sid:6400033;)' }
         ];
 
-        function getSeverityBadge(severity) {
-            const classes = {
-                'CRITICAL': 'badge-critical',
-                'HIGH': 'badge-high',
-                'MEDIUM': 'badge-medium',
-                'LOW': 'badge-low'
-            };
-            return `<span class="badge ${classes[severity] || 'bg-secondary'}">${severity}</span>`;
+        function getSeverityClass(severity) {
+            return {
+                'CRITICAL': 'severity-critical',
+                'HIGH': 'severity-high',
+                'MEDIUM': 'severity-medium',
+                'LOW': 'severity-low'
+            }[severity] || 'bg-secondary';
         }
 
-        function getCategoryBadge(category) {
-            const colors = {
-                'Malware': 'bg-danger',
-                'Suspicious File': 'bg-warning text-dark',
-                'Web Attack': 'bg-purple',
-                'Data Leak': 'bg-info',
-                'C2/Malware': 'bg-danger'
-            };
-            return `<span class="badge ${colors[category] || 'bg-secondary'}">${category}</span>`;
+        function getCatClass(cat) {
+            return {
+                'malware': 'cat-malware',
+                'file': 'cat-file',
+                'web': 'cat-web',
+                'leak': 'cat-leak',
+                'c2': 'cat-c2'
+            }[cat] || '';
         }
 
-        function renderTable() {
-            const tbody = document.getElementById('testCasesTable');
-            tbody.innerHTML = TEST_CASES.map(tc => `
-                <tr>
-                    <td><div class="test-number">${tc.id}</div></td>
-                    <td><span class="sid-badge">${tc.sid}</span></td>
-                    <td>${tc.name}</td>
-                    <td>${getCategoryBadge(tc.category)}</td>
-                    <td>${getSeverityBadge(tc.severity)}</td>
-                    <td><code>${tc.expectedAction}</code></td>
-                    <td>
-                        <button class="btn btn-danger btn-sm btn-test" onclick="runTest(${tc.id})">
-                            <i class="fas fa-play me-1"></i>Test
+        function renderTestCards() {
+            const grid = document.getElementById('testGrid');
+            grid.innerHTML = TEST_CASES.map(tc => `
+                <div class="test-card ${getCatClass(tc.catClass)}">
+                    <div class="test-card-header">
+                        <div class="test-number">${tc.id}</div>
+                        <div class="flex-grow-1">
+                            <div class="fw-bold">${tc.name}</div>
+                            <small class="text-secondary">${tc.cat}</small>
+                        </div>
+                        <span class="sid-badge">SID ${tc.sid}</span>
+                    </div>
+                    <div class="test-card-body">
+                        <p class="text-secondary mb-2" style="font-size: 0.9rem;">${tc.desc}</p>
+                        <div class="d-flex gap-2 mb-2">
+                            <span class="badge ${getSeverityClass(tc.severity)}">${tc.severity}</span>
+                            <span class="badge bg-dark">Expected: ${tc.expected}</span>
+                        </div>
+                        <div class="endpoint">${tc.endpoint}</div>
+                        <div class="rule-info">${tc.rule}</div>
+                    </div>
+                    <div class="test-card-footer">
+                        <button class="btn-test flex-grow-1" onclick="runTest(${tc.id})">
+                            <i class="fas fa-play me-1"></i>Run Test
                         </button>
-                    </td>
-                </tr>
-            `).join('');
-        }
-
-        function renderCards() {
-            const container = document.getElementById('testCardsContainer');
-            container.innerHTML = TEST_CASES.map(tc => `
-                <div class="col-md-6 mb-3">
-                    <div class="card category-${tc.catClass}">
-                        <div class="card-header d-flex justify-content-between align-items-center">
-                            <div>
-                                <span class="test-number me-2" style="display:inline-flex;width:30px;height:30px;font-size:0.9rem;">${tc.id}</span>
-                                <strong>${tc.name}</strong>
-                            </div>
-                            <span class="sid-badge">${tc.sid}</span>
-                        </div>
-                        <div class="card-body">
-                            <p class="text-secondary mb-2">${tc.description}</p>
-                            <div class="mb-2">
-                                ${getCategoryBadge(tc.category)}
-                                ${getSeverityBadge(tc.severity)}
-                                <span class="badge bg-dark">Expected: ${tc.expectedAction}</span>
-                            </div>
-                            <div class="mb-2">
-                                <small class="text-secondary">Endpoint:</small>
-                                <code class="endpoint-code">${tc.endpoint}</code>
-                            </div>
-                            <div class="mb-3">
-                                <small class="text-secondary">Suricata Rule:</small>
-                                <pre class="result-box mb-0" style="font-size:0.75rem;max-height:80px;">${tc.ruleInfo}</pre>
-                            </div>
-                            <button class="btn btn-danger btn-sm" onclick="runTest(${tc.id})">
-                                <i class="fas fa-play me-1"></i>Run Test #${tc.id}
-                            </button>
-                            <a href="${tc.endpoint}" target="_blank" class="btn btn-outline-info btn-sm">
-                                <i class="fas fa-external-link-alt me-1"></i>Open
-                            </a>
-                        </div>
+                        <a href="${tc.endpoint}" target="_blank" class="btn-view">
+                            <i class="fas fa-external-link-alt"></i>
+                        </a>
                     </div>
                 </div>
             `).join('');
+        }
+
+        function showResults() {
+            document.getElementById('resultsPanel').classList.remove('hidden');
+        }
+
+        function toggleResults() {
+            document.getElementById('resultsPanel').classList.toggle('hidden');
+        }
+
+        function clearResults() {
+            document.getElementById('resultsBody').innerHTML = '';
         }
 
         async function runTest(id) {
             const tc = TEST_CASES.find(t => t.id === id);
             if (!tc) return;
 
-            const resultsPanel = document.getElementById('resultsPanel');
-            const resultsContent = document.getElementById('resultsContent');
+            showResults();
+            const resultsBody = document.getElementById('resultsBody');
             
-            resultsPanel.style.display = 'block';
-            resultsContent.innerHTML = `<span class="text-info">Testing SID ${tc.sid}: ${tc.name}...</span>\n`;
+            const resultId = `result-${tc.id}-${Date.now()}`;
+            const pendingHtml = `
+                <div class="result-item pending" id="${resultId}">
+                    <div class="result-title">
+                        <span class="test-number" style="width:30px;height:30px;font-size:0.8rem;">${tc.id}</span>
+                        <strong>SID ${tc.sid}: ${tc.name}</strong>
+                        <span class="badge bg-warning text-dark"><i class="fas fa-spinner fa-spin me-1"></i>Testing...</span>
+                    </div>
+                </div>
+            `;
+            resultsBody.insertAdjacentHTML('afterbegin', pendingHtml);
 
             try {
                 const startTime = Date.now();
                 const response = await fetch(tc.endpoint);
                 const elapsed = Date.now() - startTime;
                 const status = response.status;
-                const contentType = response.headers.get('content-type');
                 
-                resultsContent.innerHTML += `
-<span class="text-success">✓ Request sent to: ${tc.endpoint}</span>
-<span class="text-warning">Response Status: ${status}</span>
-<span class="text-secondary">Content-Type: ${contentType}</span>
-<span class="text-secondary">Time: ${elapsed}ms</span>
-
-<span class="text-info">═══════════════════════════════════════</span>
-<span class="text-danger">⚡ CHECK NGFW DASHBOARD FOR:</span>
-  • Alert/Block with SID: <strong>${tc.sid}</strong>
-  • Expected Action: <strong>${tc.expectedAction}</strong>
-  • Category: ${tc.category}
-<span class="text-info">═══════════════════════════════════════</span>
-`;
+                const resultEl = document.getElementById(resultId);
+                resultEl.className = 'result-item success';
+                resultEl.innerHTML = `
+                    <div class="result-title">
+                        <span class="test-number" style="width:30px;height:30px;font-size:0.8rem;">${tc.id}</span>
+                        <strong>SID ${tc.sid}: ${tc.name}</strong>
+                        <span class="badge bg-success"><i class="fas fa-check me-1"></i>Request Sent</span>
+                        <span class="badge ${getSeverityClass(tc.severity)}">${tc.severity}</span>
+                    </div>
+                    <div class="result-details">
+                        <div class="result-detail-item">
+                            <label>Endpoint</label>
+                            <code style="color: var(--accent-green);">${tc.endpoint}</code>
+                        </div>
+                        <div class="result-detail-item">
+                            <label>HTTP Status</label>
+                            <strong>${status}</strong>
+                        </div>
+                        <div class="result-detail-item">
+                            <label>Response Time</label>
+                            <strong>${elapsed}ms</strong>
+                        </div>
+                        <div class="result-detail-item">
+                            <label>Expected Action</label>
+                            <strong style="color: var(--accent-red);">${tc.expected}</strong>
+                        </div>
+                    </div>
+                    <div class="mt-2 p-2 rounded" style="background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3);">
+                        <i class="fas fa-exclamation-triangle text-danger me-2"></i>
+                        <strong>Check NGFW Dashboard:</strong> Tìm alert/block với <strong>SID ${tc.sid}</strong>
+                    </div>
+                `;
             } catch (error) {
-                resultsContent.innerHTML += `
-<span class="text-danger">✗ Request blocked or failed</span>
-<span class="text-success">⚡ This might indicate NGFW is blocking!</span>
-<span class="text-warning">Check NGFW logs for SID: ${tc.sid}</span>
-Error: ${error.message}
-`;
+                const resultEl = document.getElementById(resultId);
+                resultEl.className = 'result-item blocked';
+                resultEl.innerHTML = `
+                    <div class="result-title">
+                        <span class="test-number" style="width:30px;height:30px;font-size:0.8rem;">${tc.id}</span>
+                        <strong>SID ${tc.sid}: ${tc.name}</strong>
+                        <span class="badge bg-danger"><i class="fas fa-ban me-1"></i>Blocked/Failed</span>
+                    </div>
+                    <div class="mt-2 p-2 rounded" style="background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.3);">
+                        <i class="fas fa-shield-alt text-success me-2"></i>
+                        <strong>Có thể NGFW đã block request này!</strong> Check logs với SID ${tc.sid}
+                    </div>
+                    <small class="text-secondary">Error: ${error.message}</small>
+                `;
             }
-            
-            resultsPanel.scrollIntoView({ behavior: 'smooth' });
         }
 
         async function runAllTests() {
-            if (!confirm('Run all 20 tests? This will trigger multiple security alerts.')) return;
+            if (!confirm('Chạy tất cả 20 tests? Sẽ tạo nhiều security alerts trên NGFW.')) return;
+            
+            showResults();
+            clearResults();
             
             for (const tc of TEST_CASES) {
                 await runTest(tc.id);
-                await new Promise(r => setTimeout(r, 500));
+                await new Promise(r => setTimeout(r, 300));
             }
         }
 
         // Initialize
-        renderTable();
-        renderCards();
+        renderTestCards();
     </script>
 </body>
 </html>
