@@ -78,6 +78,7 @@ app.use((err, req, res, next) => {
 });
 
 // Start server after DB check
+const path = require('path');
 const { sequelize } = require('./models');
 const { getSequelizeOptions } = require('./config/database');
 
@@ -101,9 +102,33 @@ sequelize.authenticate()
         console.log('Database tables synced!');
         app.listen(port, () => {
             console.log(`Server is listening on port ${port}`);
+            console.log(`NGFW Test UI: http://localhost:${port}/ngfw-test/`);
+            startNgfwHttpServer();
         });
     })
     .catch((err) => {
         console.error('Kết nối Supabase thất bại:', err.message);
         process.exit(1);
     });
+
+/** Optional plain-HTTP server for Suricata (port 80). Set NGFW_HTTP_PORT=80 */
+function startNgfwHttpServer() {
+    const httpPort = process.env.NGFW_HTTP_PORT;
+    if (!httpPort) return;
+
+    const httpApp = express();
+    httpApp.use(express.static(path.join(__dirname, 'securityPuplic')));
+    httpApp.use('/ngfw-test', require('./routes/ngfwTestRouter'));
+    httpApp.get('/', (req, res) => res.redirect('/ngfw-test/'));
+
+    httpApp.listen(Number(httpPort), '0.0.0.0', () => {
+        console.log('');
+        console.log('╔══════════════════════════════════════════════════╗');
+        console.log('║  NGFW HTTP Test (plaintext) — Suricata inspection  ║');
+        console.log('╠══════════════════════════════════════════════════╣');
+        console.log(`║  http://localhost:${httpPort}/ngfw-test/`.padEnd(51) + '║');
+        console.log('║  Tunnel: pinggy / ngrok http ' + String(httpPort).padEnd(18) + '║');
+        console.log('╚══════════════════════════════════════════════════╝');
+        console.log('');
+    });
+}

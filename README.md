@@ -23,6 +23,7 @@ npm start
 | `DATABASE_URL` | (tuỳ chọn) URI — phải encode `.` trong user thành `%2E` |
 | `SESSION_SECRET` | Secret cho express-session |
 | `PORT` | Cổng server (mặc định 5555) |
+| `NGFW_HTTP_PORT` | (tuỳ chọn) Cổng HTTP plaintext cho Suricata, ví dụ `80` |
 | `NODE_ENV` | `development` hoặc `production` |
 
 ### Supabase
@@ -73,6 +74,7 @@ npm run db:sync
 - `npm start` — chạy server
 - `npm run dev` — chạy với `--watch`
 - `npm run db:sync` — đồng bộ schema Sequelize
+- `npm run ngfw:http` — chạy app + HTTP port 80 cho NGFW (Suricata)
 
 ## NGFW Test Suite
 
@@ -99,13 +101,33 @@ https://your-app-name.onrender.com/ngfw-test/
 | 1-15 | 5900006-5900070 | MALWARE | EICAR, EXE, Macro, Cryptominer, Exploit Kit |
 | 16-25 | 6400000-6400021 | VIRUS | Office Macro, VBScript, JavaScript, Java, PDF |
 | 26-28 | 6400026-6400028 | WEB-ATTACK | SQL Injection |
-| 29-30 | 6400032-6400033 | EXPLOIT-KIT | Java Exploit, EXE from file share |
+| 29 | 6400032 | EXPLOIT-KIT | Cool Java Exploit Kit |
+| 30 | 6400009 | VIRUS | PE File Infector Pattern (MZ + E9) |
+
+### HTTP plaintext (Suricata)
+
+Project `ngfw-http-test` đã được gộp vào repo này. Để Suricata đọc HTTP không mã hoá:
+
+```bash
+# macOS/Linux — port 80 thường cần sudo
+sudo NGFW_HTTP_PORT=80 npm start
+# hoặc
+sudo npm run ngfw:http
+```
+
+Tunnel (pinggy / ngrok) trỏ tới cổng 80:
+
+```bash
+ssh -p 443 -R0:localhost:80 a.pinggy.io
+```
+
+Mở `http://localhost:80/ngfw-test/` (hoặc URL tunnel).
 
 ### Cách test
 
-1. Cấu hình NGFW để inspect traffic HTTPS từ client đến web server
-2. Mở trang `/ngfw-test/` trên trình duyệt
-3. Click "Test" trên từng test case hoặc "Run All 30 Tests"
-4. Kiểm tra NGFW Dashboard/Logs với SID tương ứng
+1. **HTTPS (Render):** cấu hình SSL Inspection trên NGFW, mở `https://…/ngfw-test/`
+2. **HTTP (Suricata):** dùng `NGFW_HTTP_PORT=80` + tunnel như trên
+3. Click "Test" hoặc "Run All 30 Tests"
+4. Kiểm tra log NGFW theo SID
 
-**Lưu ý:** NGFW cần cấu hình SSL Inspection để giải mã HTTPS traffic.
+**Lưu ý:** Không có SSL inspection thì HTTPS trên Render sẽ không kích hoạt rule HTTP body.

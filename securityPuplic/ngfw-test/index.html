@@ -3,60 +3,57 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NGFW Test Suite - 30 Real Suricata Rules</title>
+    <title>NGFW HTTP Test - Suricata Rules</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
-        :root {
-            --bg-dark: #0f172a;
-            --bg-card: #1e293b;
-            --border-color: #334155;
-            --text-primary: #f1f5f9;
-            --text-secondary: #94a3b8;
-        }
-        body { background: var(--bg-dark); color: var(--text-primary); font-family: 'Segoe UI', system-ui, sans-serif; }
-        .header { background: linear-gradient(135deg, #1e3a5f 0%, #0f172a 100%); border-bottom: 1px solid var(--border-color); padding: 20px 0; }
-        .topology { background: var(--bg-card); border-radius: 12px; padding: 20px; margin-bottom: 20px; display: flex; align-items: center; justify-content: center; gap: 20px; flex-wrap: wrap; }
-        .topo-node { background: #334155; border: 2px solid #3b82f6; border-radius: 10px; padding: 15px 25px; text-align: center; }
-        .topo-node.ngfw { border-color: #ef4444; }
-        .topo-node.server { border-color: #22c55e; }
-        .topo-arrow { font-size: 1.5rem; color: #06b6d4; }
-        .test-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(400px, 1fr)); gap: 12px; }
-        .test-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden; transition: all 0.2s; }
-        .test-card:hover { border-color: #3b82f6; transform: translateY(-2px); }
-        .test-card-header { background: rgba(255,255,255,0.03); padding: 10px 15px; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; gap: 10px; }
-        .test-num { width: 32px; height: 32px; background: #3b82f6; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.9rem; flex-shrink: 0; }
-        .test-card-body { padding: 12px 15px; }
-        .test-card-footer { padding: 10px 15px; background: rgba(0,0,0,0.2); display: flex; gap: 8px; }
-        .sid-badge { background: linear-gradient(135deg, #059669, #047857); padding: 4px 8px; border-radius: 5px; font-family: monospace; font-size: 0.8rem; font-weight: 600; }
-        .severity-critical { background: #ef4444; }
+        :root { --bg: #0a0f1a; --card: #131b2e; --border: #1e2d4a; --accent: #3b82f6; --danger: #ef4444; --success: #22c55e; }
+        * { box-sizing: border-box; }
+        body { background: var(--bg); color: #e2e8f0; font-family: 'Segoe UI', system-ui, sans-serif; margin: 0; padding: 0; }
+        .header { background: linear-gradient(135deg, #1e3a5f, #0f172a); padding: 25px 0; border-bottom: 2px solid var(--accent); }
+        .header h1 { margin: 0; font-size: 1.8rem; }
+        .badge-http { background: var(--success); color: #000; padding: 4px 12px; border-radius: 20px; font-weight: 700; font-size: 0.75rem; }
+        .server-info { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 20px; margin: 20px 0; }
+        .server-url { font-family: 'Consolas', monospace; font-size: 1.1rem; color: var(--success); background: #0d1117; padding: 10px 15px; border-radius: 6px; display: inline-block; }
+        .topology { display: flex; align-items: center; justify-content: center; gap: 15px; flex-wrap: wrap; padding: 20px; background: var(--card); border-radius: 10px; margin-bottom: 20px; }
+        .topo-box { background: #1a2744; border: 2px solid var(--border); border-radius: 10px; padding: 15px 25px; text-align: center; }
+        .topo-box.client { border-color: var(--accent); }
+        .topo-box.ngfw { border-color: var(--danger); }
+        .topo-box.server { border-color: var(--success); }
+        .topo-arrow { color: #64748b; font-size: 1.5rem; }
+        .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 15px; margin-bottom: 25px; }
+        .stat { background: var(--card); border-radius: 10px; padding: 20px; text-align: center; }
+        .stat h3 { margin: 0; font-size: 2rem; }
+        .stat p { margin: 5px 0 0; color: #64748b; font-size: 0.85rem; }
+        .test-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); gap: 15px; }
+        .test-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; transition: all 0.2s; }
+        .test-card:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(0,0,0,0.3); border-color: var(--accent); }
+        .test-card.cat-malware { border-left: 4px solid var(--danger); }
+        .test-card.cat-virus { border-left: 4px solid #f97316; }
+        .test-card.cat-exploit { border-left: 4px solid #a855f7; }
+        .test-card.cat-web { border-left: 4px solid var(--accent); }
+        .test-card.cat-sandbox { border-left: 4px solid #06b6d4; }
+        .card-header { background: rgba(255,255,255,0.03); padding: 12px 15px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid var(--border); }
+        .test-num { width: 36px; height: 36px; background: var(--accent); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 700; flex-shrink: 0; }
+        .sid-badge { background: linear-gradient(135deg, #059669, #047857); padding: 5px 10px; border-radius: 6px; font-family: monospace; font-size: 0.8rem; font-weight: 600; }
+        .card-body { padding: 15px; }
+        .endpoint-url { background: #0d1117; padding: 8px 12px; border-radius: 6px; font-family: monospace; font-size: 0.8rem; color: var(--success); margin: 10px 0; word-break: break-all; }
+        .severity { padding: 4px 10px; border-radius: 5px; font-size: 0.75rem; font-weight: 600; }
+        .severity-critical { background: var(--danger); }
         .severity-high { background: #f97316; }
         .severity-medium { background: #eab308; color: #000; }
-        .cat-malware { border-left: 4px solid #ef4444; }
-        .cat-virus { border-left: 4px solid #f97316; }
-        .cat-exploit { border-left: 4px solid #a855f7; }
-        .cat-web { border-left: 4px solid #3b82f6; }
-        .cat-sandbox { border-left: 4px solid #06b6d4; }
-        .endpoint { background: #0f172a; padding: 6px 10px; border-radius: 5px; font-family: monospace; font-size: 0.75rem; color: #22c55e; margin: 8px 0; }
-        .rule-box { background: #0f172a; border: 1px solid #334155; border-radius: 5px; padding: 8px; font-family: monospace; font-size: 0.65rem; color: #06b6d4; max-height: 50px; overflow-y: auto; line-height: 1.3; }
-        .btn-test { background: linear-gradient(135deg, #dc2626, #b91c1c); border: none; color: white; padding: 6px 14px; border-radius: 5px; font-weight: 500; font-size: 0.85rem; }
-        .btn-test:hover { background: linear-gradient(135deg, #ef4444, #dc2626); }
-        .btn-open { background: transparent; border: 1px solid #3b82f6; color: #3b82f6; padding: 6px 14px; border-radius: 5px; font-size: 0.85rem; }
-        .btn-open:hover { background: #3b82f6; color: white; }
-        .results-panel { position: fixed; bottom: 0; left: 0; right: 0; background: #1e293b; border-top: 3px solid #3b82f6; max-height: 300px; overflow: hidden; display: flex; flex-direction: column; z-index: 1000; transform: translateY(100%); transition: transform 0.3s; }
-        .results-panel.show { transform: translateY(0); }
-        .results-header { background: #0f172a; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); }
-        .results-body { flex: 1; overflow-y: auto; padding: 15px 20px; }
-        .result-item { background: #0f172a; border: 1px solid #334155; border-radius: 6px; padding: 12px; margin-bottom: 10px; border-left: 4px solid #22c55e; }
-        .result-item.blocked { border-left-color: #ef4444; }
-        .stats-row { display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap; }
-        .stat-box { background: var(--bg-card); border-radius: 8px; padding: 15px 20px; text-align: center; flex: 1; min-width: 100px; }
-        .stat-box h3 { margin: 0; font-size: 1.8rem; }
-        .stat-box p { margin: 5px 0 0; color: var(--text-secondary); font-size: 0.85rem; }
-        .content-wrapper { padding-bottom: 80px; }
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: var(--bg-dark); }
-        ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 3px; }
+        .card-footer { padding: 12px 15px; background: rgba(0,0,0,0.2); display: flex; gap: 10px; }
+        .btn-test { flex: 1; background: linear-gradient(135deg, #dc2626, #b91c1c); border: none; color: white; padding: 10px; border-radius: 6px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+        .btn-test:hover { background: linear-gradient(135deg, #ef4444, #dc2626); transform: scale(1.02); }
+        .btn-open { background: transparent; border: 2px solid var(--accent); color: var(--accent); padding: 10px 15px; border-radius: 6px; text-decoration: none; transition: all 0.2s; }
+        .btn-open:hover { background: var(--accent); color: white; }
+        .results { position: fixed; bottom: 0; left: 0; right: 0; background: var(--card); border-top: 3px solid var(--accent); max-height: 280px; transform: translateY(100%); transition: transform 0.3s; z-index: 1000; }
+        .results.show { transform: translateY(0); }
+        .results-header { background: #0d1117; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; }
+        .results-body { max-height: 220px; overflow-y: auto; padding: 15px 20px; }
+        .result-item { background: #0d1117; border: 1px solid var(--border); border-radius: 8px; padding: 12px 15px; margin-bottom: 10px; border-left: 4px solid var(--success); }
+        .result-item.blocked { border-left-color: var(--danger); }
+        .content-wrap { padding-bottom: 100px; }
         @media (max-width: 768px) { .test-grid { grid-template-columns: 1fr; } .topology { flex-direction: column; } .topo-arrow { transform: rotate(90deg); } }
     </style>
 </head>
@@ -65,36 +62,65 @@
         <div class="container">
             <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
                 <div>
-                    <h1 class="h3 mb-1"><i class="fas fa-shield-alt text-danger me-2"></i>NGFW Test Suite</h1>
-                    <p class="text-secondary mb-0 small">30 Test Cases từ <code>et-virus_protection.rules</code> & <code>et-malware_protection.rules.txt</code></p>
-                    <p class="mb-0 small"><i class="fas fa-server me-1"></i>Server: <code id="baseUrl" class="text-success"></code></p>
+                    <h1><i class="fas fa-shield-virus text-danger me-2"></i>NGFW Test Suite</h1>
+                    <p class="mb-0 mt-2 text-secondary">
+                        <span class="badge-http me-2">HTTP</span>
+                        HiPV_53cUr1tY — 30 Suricata rules (et-virus & et-malware)
+                    </p>
                 </div>
-                <button class="btn btn-success" onclick="runAllTests()"><i class="fas fa-play me-2"></i>Run All 30 Tests</button>
+                <button class="btn btn-success btn-lg" onclick="runAllTests()">
+                    <i class="fas fa-play me-2"></i>Run All 30 Tests
+                </button>
             </div>
         </div>
     </div>
 
-    <div class="container py-4 content-wrapper">
-        <div class="topology">
-            <div class="topo-node"><i class="fas fa-laptop fa-2x mb-2 text-info d-block"></i><strong>Client</strong></div>
-            <div class="topo-arrow"><i class="fas fa-arrow-right"></i></div>
-            <div class="topo-node ngfw"><i class="fas fa-shield-alt fa-2x mb-2 text-danger d-block"></i><strong>NGFW</strong><br><small class="text-secondary">Suricata IDS/IPS</small></div>
-            <div class="topo-arrow"><i class="fas fa-arrow-right"></i></div>
-            <div class="topo-node server"><i class="fas fa-server fa-2x mb-2 text-success d-block"></i><strong>Web Server</strong></div>
+    <div class="container py-4 content-wrap">
+        <div class="server-info">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h5 class="mb-2"><i class="fas fa-server me-2 text-success"></i>Server URL</h5>
+                    <div class="server-url" id="serverUrl">Loading...</div>
+                </div>
+                <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                    <small class="text-secondary d-block mb-1">Protocol</small>
+                    <span class="badge-http" style="font-size: 1rem; padding: 8px 20px;">HTTP (Plaintext)</span>
+                </div>
+            </div>
         </div>
 
-        <div class="stats-row">
-            <div class="stat-box"><h3 class="text-primary">30</h3><p>Test Cases</p></div>
-            <div class="stat-box"><h3 class="text-danger">15</h3><p>MALWARE</p></div>
-            <div class="stat-box"><h3 class="text-warning">10</h3><p>VIRUS</p></div>
-            <div class="stat-box"><h3 class="text-purple" style="color:#a855f7">3</h3><p>EXPLOIT-KIT</p></div>
-            <div class="stat-box"><h3 class="text-info">2</h3><p>Anti-Sandbox</p></div>
+        <div class="topology">
+            <div class="topo-box client">
+                <i class="fas fa-laptop fa-2x mb-2 d-block" style="color: var(--accent)"></i>
+                <strong>Client</strong><br>
+                <small class="text-secondary">Browser</small>
+            </div>
+            <div class="topo-arrow"><i class="fas fa-arrow-right"></i></div>
+            <div class="topo-box ngfw">
+                <i class="fas fa-shield-alt fa-2x mb-2 d-block" style="color: var(--danger)"></i>
+                <strong>NGFW</strong><br>
+                <small class="text-secondary">Suricata IDS/IPS</small>
+            </div>
+            <div class="topo-arrow"><i class="fas fa-arrow-right"></i></div>
+            <div class="topo-box server">
+                <i class="fas fa-server fa-2x mb-2 d-block" style="color: var(--success)"></i>
+                <strong>HTTP Server</strong><br>
+                <small class="text-secondary">Port 80 / Ngrok</small>
+            </div>
+        </div>
+
+        <div class="stats">
+            <div class="stat"><h3 class="text-primary">30</h3><p>Test Cases</p></div>
+            <div class="stat"><h3 class="text-danger">14</h3><p>MALWARE</p></div>
+            <div class="stat"><h3 style="color:#f97316">11</h3><p>VIRUS</p></div>
+            <div class="stat"><h3 style="color:#a855f7">3</h3><p>EXPLOIT-KIT</p></div>
+            <div class="stat"><h3 class="text-info">2</h3><p>SANDBOX</p></div>
         </div>
 
         <div class="test-grid" id="testGrid"></div>
     </div>
 
-    <div class="results-panel" id="resultsPanel">
+    <div class="results" id="results">
         <div class="results-header">
             <h6 class="mb-0"><i class="fas fa-terminal me-2"></i>Test Results</h6>
             <div>
@@ -106,101 +132,80 @@
     </div>
 
     <script>
+        const API_BASE = window.location.origin + '/ngfw-test';
+        document.getElementById('serverUrl').textContent = API_BASE + '/';
+
         const TEST_CASES = [
-            { id: 1, sid: '5900006', name: 'EICAR Test File - HTTP Download', cat: 'MALWARE', catClass: 'malware', endpoint: '/ngfw-test/test/5900006', severity: 'HIGH',
-              rule: 'drop http ... (msg:"MALWARE EICAR Test File - HTTP Download Blocked"; content:"X5O!P%@AP[4|5C|PZX54(P^)7CC)7}|24|EICAR"; sid:5900006;)' },
-            { id: 2, sid: '5900012', name: 'Suspicious EXE Download', cat: 'MALWARE', catClass: 'malware', endpoint: '/ngfw-test/test/5900012', severity: 'HIGH',
-              rule: 'drop http ... (msg:"MALWARE Suspicious EXE Download"; content:"MZ"; depth:2; sid:5900012;)' },
-            { id: 3, sid: '5900014', name: 'Macro-Enabled Document Download', cat: 'MALWARE', catClass: 'malware', endpoint: '/ngfw-test/test/5900014', severity: 'HIGH',
-              rule: 'drop http ... (msg:"MALWARE Macro-Enabled Document Download"; content:"PK"; depth:2; sid:5900014;)' },
-            { id: 4, sid: '5900015', name: 'Windows Script File Download', cat: 'MALWARE', catClass: 'malware', endpoint: '/ngfw-test/test/5900015', severity: 'HIGH',
-              rule: 'drop http ... (msg:"MALWARE Windows Script File Download"; content:"WScript"; sid:5900015;)' },
-            { id: 5, sid: '5900016', name: 'PE Executable Downloaded', cat: 'MALWARE', catClass: 'malware', endpoint: '/ngfw-test/test/5900016', severity: 'CRITICAL',
-              rule: 'drop http ... (msg:"MALWARE PE Executable Downloaded"; content:"MZ"; content:"PE|00 00|"; sid:5900016;)' },
-            { id: 6, sid: '5900029', name: 'Coinhive Cryptominer', cat: 'MALWARE', catClass: 'malware', endpoint: '/ngfw-test/test/5900029', severity: 'MEDIUM',
-              rule: 'drop http ... (msg:"MALWARE Coinhive Cryptominer"; content:"coinhive"; sid:5900029;)' },
-            { id: 7, sid: '5900032', name: 'CryptoLoot Miner', cat: 'MALWARE', catClass: 'malware', endpoint: '/ngfw-test/test/5900032', severity: 'MEDIUM',
-              rule: 'drop http ... (msg:"MALWARE CryptoLoot Miner"; content:"crypto-loot"; sid:5900032;)' },
-            { id: 8, sid: '5900035', name: 'JSECoin Miner', cat: 'MALWARE', catClass: 'malware', endpoint: '/ngfw-test/test/5900035', severity: 'MEDIUM',
-              rule: 'drop http ... (msg:"MALWARE JSECoin Miner"; content:"jsecoin"; sid:5900035;)' },
-            { id: 9, sid: '5900044', name: 'RIG Exploit Kit Landing Page', cat: 'EXPLOIT-KIT', catClass: 'exploit', endpoint: '/ngfw-test/test/5900044', severity: 'HIGH',
-              rule: 'drop http ... (msg:"MALWARE RIG Exploit Kit Landing Page"; content:"iframe"; sid:5900044;)' },
-            { id: 10, sid: '5900045', name: 'Fallout Exploit Kit', cat: 'EXPLOIT-KIT', catClass: 'exploit', endpoint: '/ngfw-test/test/5900045', severity: 'HIGH',
-              rule: 'drop http ... (msg:"MALWARE Fallout Exploit Kit"; content:"FWS"; depth:3; sid:5900045;)' },
-            { id: 11, sid: '5900048', name: 'Suspicious ZIP with EXE', cat: 'MALWARE', catClass: 'malware', endpoint: '/ngfw-test/test/5900048', severity: 'HIGH',
-              rule: 'drop http ... (msg:"MALWARE Suspicious ZIP Download"; content:"PK|03 04|"; content:".exe"; sid:5900048;)' },
-            { id: 12, sid: '5900049', name: 'HTML Smuggling Base64', cat: 'MALWARE', catClass: 'malware', endpoint: '/ngfw-test/test/5900049', severity: 'CRITICAL',
-              rule: 'drop http ... (msg:"MALWARE HTML Smuggling - Base64 Encoded Payload"; content:"data:application/octet-stream;base64"; sid:5900049;)' },
-            { id: 13, sid: '5900063', name: 'VirtualBox Detection', cat: 'ANTI-SANDBOX', catClass: 'sandbox', endpoint: '/ngfw-test/test/5900063', severity: 'MEDIUM',
-              rule: 'drop http ... (msg:"MALWARE VirtualBox Detection Query"; content:"VBoxService"; sid:5900063;)' },
-            { id: 14, sid: '5900064', name: 'VMware Detection', cat: 'ANTI-SANDBOX', catClass: 'sandbox', endpoint: '/ngfw-test/test/5900064', severity: 'MEDIUM',
-              rule: 'drop http ... (msg:"MALWARE VMware Detection Query"; content:"vmtoolsd"; sid:5900064;)' },
-            { id: 15, sid: '5900070', name: 'EICAR Attachment Header', cat: 'MALWARE', catClass: 'malware', endpoint: '/ngfw-test/test/5900070', severity: 'HIGH',
-              rule: 'drop http ... (msg:"EICAR Blocked - Attachment Header"; content:"Content-Disposition"; content:"eicar"; sid:5900070;)' },
-            { id: 16, sid: '6400000', name: 'PE File with Auto-Run', cat: 'VIRUS', catClass: 'virus', endpoint: '/ngfw-test/test/6400000', severity: 'HIGH',
-              rule: 'drop http ... (msg:"VIRUS Suspicious PE File with Auto-Run"; content:"MZ"; content:"autorun"; sid:6400000;)' },
-            { id: 17, sid: '6400001', name: 'Office Macro Shell Execute', cat: 'VIRUS', catClass: 'virus', endpoint: '/ngfw-test/test/6400001', severity: 'HIGH',
-              rule: 'drop http ... (msg:"VIRUS Office Macro with Shell Execute"; content:"Shell"; content:"Execute"; sid:6400001;)' },
-            { id: 18, sid: '6400002', name: 'Word Macro AutoOpen', cat: 'VIRUS', catClass: 'virus', endpoint: '/ngfw-test/test/6400002', severity: 'HIGH',
-              rule: 'drop http ... (msg:"VIRUS Word Macro Auto-Execute"; content:"AutoOpen"; sid:6400002;)' },
-            { id: 19, sid: '6400003', name: 'Excel Macro Auto_Open', cat: 'VIRUS', catClass: 'virus', endpoint: '/ngfw-test/test/6400003', severity: 'HIGH',
-              rule: 'drop http ... (msg:"VIRUS Excel Macro Auto-Execute"; content:"Auto_Open"; sid:6400003;)' },
-            { id: 20, sid: '6400007', name: 'Macro CreateObject', cat: 'VIRUS', catClass: 'virus', endpoint: '/ngfw-test/test/6400007', severity: 'HIGH',
-              rule: 'drop http ... (msg:"VIRUS Macro-Enabled Document with CreateObject"; content:"CreateObject"; sid:6400007;)' },
-            { id: 21, sid: '6400011', name: 'VBScript Self-Replication', cat: 'VIRUS', catClass: 'virus', endpoint: '/ngfw-test/test/6400011', severity: 'CRITICAL',
-              rule: 'drop http ... (msg:"VIRUS VBScript Self-Replication"; content:"WScript.Shell"; content:"CopyFile"; sid:6400011;)' },
-            { id: 22, sid: '6400012', name: 'JavaScript FileSystem Access', cat: 'VIRUS', catClass: 'virus', endpoint: '/ngfw-test/test/6400012', severity: 'CRITICAL',
-              rule: 'drop http ... (msg:"VIRUS JavaScript File System Access"; content:"ActiveXObject"; content:"Scripting.FileSystemObject"; sid:6400012;)' },
-            { id: 23, sid: '6400013', name: 'Batch File Self-Replication', cat: 'VIRUS', catClass: 'virus', endpoint: '/ngfw-test/test/6400013', severity: 'HIGH',
-              rule: 'drop http ... (msg:"VIRUS Batch File Self-Replication"; content:"copy"; content:"%0"; sid:6400013;)' },
-            { id: 24, sid: '6400020', name: 'Java Malicious Class File', cat: 'VIRUS', catClass: 'virus', endpoint: '/ngfw-test/test/6400020', severity: 'HIGH',
-              rule: 'drop http ... (msg:"VIRUS Java Malicious Class File"; content:"|CA FE BA BE|"; sid:6400020;)' },
-            { id: 25, sid: '6400021', name: 'PDF with Malicious JavaScript', cat: 'VIRUS', catClass: 'virus', endpoint: '/ngfw-test/test/6400021', severity: 'CRITICAL',
-              rule: 'drop http ... (msg:"VIRUS PDF with Malicious JavaScript"; content:"/JS"; content:"/JavaScript"; sid:6400021;)' },
-            { id: 26, sid: '6400026', name: 'SQL Injection SELECT', cat: 'WEB-ATTACK', catClass: 'web', endpoint: '/ngfw-test/test/6400026', severity: 'HIGH',
-              rule: 'drop http ... (msg:"ET WEB_SPECIFIC_APPS SQL Injection -- SELECT"; content:"SELECT"; content:"FROM"; sid:6400026;)' },
-            { id: 27, sid: '6400027', name: 'SQL Injection UNION SELECT', cat: 'WEB-ATTACK', catClass: 'web', endpoint: '/ngfw-test/test/6400027', severity: 'HIGH',
-              rule: 'drop http ... (msg:"ET WEB_SPECIFIC_APPS SQL Injection -- UNION SELECT"; content:"UNION"; content:"SELECT"; sid:6400027;)' },
-            { id: 28, sid: '6400028', name: 'SQL Injection INSERT', cat: 'WEB-ATTACK', catClass: 'web', endpoint: '/ngfw-test/test/6400028', severity: 'HIGH',
-              rule: 'drop http ... (msg:"ET WEB_SPECIFIC_APPS SQL Injection -- INSERT"; content:"INSERT"; content:"INTO"; sid:6400028;)' },
-            { id: 29, sid: '6400032', name: 'Cool Java Exploit Kit', cat: 'EXPLOIT-KIT', catClass: 'exploit', endpoint: '/ngfw-test/test/6400032', severity: 'CRITICAL',
-              rule: 'drop http ... (msg:"ET EXPLOIT_KIT Cool Java Exploit"; content:"PK"; content:"SunJCE.class"; sid:6400032;)' },
-            { id: 30, sid: '6400033', name: 'Suspicious EXE from File Share', cat: 'MALWARE', catClass: 'malware', endpoint: '/ngfw-test/test/6400033', severity: 'HIGH',
-              rule: 'drop http ... (msg:"ET HUNTING SUSPICIOUS EXE Download from file share"; content:".exe"; content:"a.pomf.cat"; sid:6400033;)' }
+            { id: 1, sid: '5900006', name: 'EICAR Test File - HTTP Download', cat: 'MALWARE', severity: 'HIGH', rule: 'content:"X5O!P%@AP[4|5C|PZX54(P^)7CC)7}|24|EICAR"' },
+            { id: 2, sid: '5900012', name: 'Suspicious EXE Download', cat: 'MALWARE', severity: 'HIGH', rule: 'content:"MZ"; depth:2' },
+            { id: 3, sid: '5900014', name: 'Macro-Enabled Document', cat: 'MALWARE', severity: 'HIGH', rule: 'content:"PK"; depth:2' },
+            { id: 4, sid: '5900015', name: 'Windows Script File', cat: 'MALWARE', severity: 'HIGH', rule: 'content:"WScript"' },
+            { id: 5, sid: '5900016', name: 'PE Executable', cat: 'MALWARE', severity: 'CRITICAL', rule: 'content:"MZ"; content:"PE|00 00|"' },
+            { id: 6, sid: '5900029', name: 'Coinhive Cryptominer', cat: 'MALWARE', severity: 'MEDIUM', rule: 'content:"coinhive"' },
+            { id: 7, sid: '5900032', name: 'CryptoLoot Miner', cat: 'MALWARE', severity: 'MEDIUM', rule: 'content:"crypto-loot"' },
+            { id: 8, sid: '5900035', name: 'JSECoin Miner', cat: 'MALWARE', severity: 'MEDIUM', rule: 'content:"jsecoin"' },
+            { id: 9, sid: '5900044', name: 'RIG Exploit Kit', cat: 'EXPLOIT-KIT', severity: 'HIGH', rule: 'content:"iframe"' },
+            { id: 10, sid: '5900045', name: 'Fallout Exploit Kit', cat: 'EXPLOIT-KIT', severity: 'HIGH', rule: 'content:"FWS"; depth:3' },
+            { id: 11, sid: '5900048', name: 'ZIP with EXE', cat: 'MALWARE', severity: 'HIGH', rule: 'content:"PK|03 04|"; content:".exe"' },
+            { id: 12, sid: '5900049', name: 'HTML Smuggling Base64', cat: 'MALWARE', severity: 'CRITICAL', rule: 'content:"data:application/octet-stream;base64"' },
+            { id: 13, sid: '5900063', name: 'VirtualBox Detection', cat: 'ANTI-SANDBOX', severity: 'MEDIUM', rule: 'content:"VBoxService"' },
+            { id: 14, sid: '5900064', name: 'VMware Detection', cat: 'ANTI-SANDBOX', severity: 'MEDIUM', rule: 'content:"vmtoolsd"' },
+            { id: 15, sid: '5900070', name: 'EICAR Attachment', cat: 'MALWARE', severity: 'HIGH', rule: 'Content-Disposition; filename="eicar"' },
+            { id: 16, sid: '6400000', name: 'PE with Auto-Run', cat: 'VIRUS', severity: 'HIGH', rule: 'content:"MZ"; content:"autorun"' },
+            { id: 17, sid: '6400001', name: 'Macro Shell Execute', cat: 'VIRUS', severity: 'HIGH', rule: 'content:"Shell"; content:"Execute"' },
+            { id: 18, sid: '6400002', name: 'Word AutoOpen', cat: 'VIRUS', severity: 'HIGH', rule: 'content:"AutoOpen"' },
+            { id: 19, sid: '6400003', name: 'Excel Auto_Open', cat: 'VIRUS', severity: 'HIGH', rule: 'content:"Auto_Open"' },
+            { id: 20, sid: '6400007', name: 'Macro CreateObject', cat: 'VIRUS', severity: 'HIGH', rule: 'content:"CreateObject"' },
+            { id: 21, sid: '6400011', name: 'VBScript Replication', cat: 'VIRUS', severity: 'CRITICAL', rule: 'content:"WScript.Shell"; content:"CopyFile"' },
+            { id: 22, sid: '6400012', name: 'JS FileSystem', cat: 'VIRUS', severity: 'CRITICAL', rule: 'content:"ActiveXObject"; content:"Scripting.FileSystemObject"' },
+            { id: 23, sid: '6400013', name: 'Batch Replication', cat: 'VIRUS', severity: 'HIGH', rule: 'content:"copy"; content:"%0"' },
+            { id: 24, sid: '6400020', name: 'Java Class File', cat: 'VIRUS', severity: 'HIGH', rule: 'content:"|CA FE BA BE|"' },
+            { id: 25, sid: '6400021', name: 'PDF JavaScript', cat: 'VIRUS', severity: 'CRITICAL', rule: 'content:"/JS"; content:"/JavaScript"' },
+            { id: 26, sid: '6400026', name: 'SQLi SELECT', cat: 'WEB-ATTACK', severity: 'HIGH', rule: 'content:"SELECT"; content:"FROM"' },
+            { id: 27, sid: '6400027', name: 'SQLi UNION', cat: 'WEB-ATTACK', severity: 'HIGH', rule: 'content:"UNION"; content:"SELECT"' },
+            { id: 28, sid: '6400028', name: 'SQLi INSERT', cat: 'WEB-ATTACK', severity: 'HIGH', rule: 'content:"INSERT"; content:"INTO"' },
+            { id: 29, sid: '6400032', name: 'Java Exploit Kit', cat: 'EXPLOIT-KIT', severity: 'CRITICAL', rule: 'content:"PK"; content:"SunJCE.class"' },
+            { id: 30, sid: '6400009', name: 'PE File Infector Pattern', cat: 'VIRUS', severity: 'CRITICAL',
+              rule: 'file_data; content:"MZ"; depth:2; content:"|E9|"; distance:58; within:3' }
         ];
 
-        let BASE_URL = '';
-        function getSeverityClass(s) { return { 'CRITICAL': 'severity-critical', 'HIGH': 'severity-high', 'MEDIUM': 'severity-medium' }[s] || 'bg-secondary'; }
-        function getCatClass(c) { return { 'malware': 'cat-malware', 'virus': 'cat-virus', 'exploit': 'cat-exploit', 'web': 'cat-web', 'sandbox': 'cat-sandbox' }[c] || ''; }
+        function getCatClass(cat) {
+            const map = { 'MALWARE': 'cat-malware', 'VIRUS': 'cat-virus', 'EXPLOIT-KIT': 'cat-exploit', 'WEB-ATTACK': 'cat-web', 'ANTI-SANDBOX': 'cat-sandbox' };
+            return map[cat] || '';
+        }
+
+        function getSevClass(sev) {
+            const map = { 'CRITICAL': 'severity-critical', 'HIGH': 'severity-high', 'MEDIUM': 'severity-medium' };
+            return map[sev] || 'bg-secondary';
+        }
 
         function renderGrid() {
-            document.getElementById('testGrid').innerHTML = TEST_CASES.map(tc => `
-                <div class="test-card ${getCatClass(tc.catClass)}">
-                    <div class="test-card-header">
+            const grid = document.getElementById('testGrid');
+            grid.innerHTML = TEST_CASES.map(tc => `
+                <div class="test-card ${getCatClass(tc.cat)}">
+                    <div class="card-header">
                         <div class="test-num">${tc.id}</div>
                         <div class="flex-grow-1">
-                            <div class="fw-bold" style="font-size:0.95rem">${tc.name}</div>
+                            <div class="fw-bold">${tc.name}</div>
                             <small class="text-secondary">${tc.cat}</small>
                         </div>
                         <span class="sid-badge">SID ${tc.sid}</span>
                     </div>
-                    <div class="test-card-body">
-                        <div class="d-flex gap-2 mb-2">
-                            <span class="badge ${getSeverityClass(tc.severity)}">${tc.severity}</span>
-                        </div>
-                        <div class="endpoint">${BASE_URL}${tc.endpoint}</div>
-                        <div class="rule-box">${tc.rule}</div>
+                    <div class="card-body">
+                        <span class="severity ${getSevClass(tc.severity)}">${tc.severity}</span>
+                        <div class="endpoint-url">${API_BASE}/test/${tc.sid}</div>
+                        <small class="text-secondary"><code>${tc.rule}</code></small>
                     </div>
-                    <div class="test-card-footer">
-                        <button class="btn-test flex-grow-1" onclick="runTest(${tc.id})"><i class="fas fa-play me-1"></i>Test</button>
-                        <a href="${tc.endpoint}" target="_blank" class="btn-open"><i class="fas fa-external-link-alt"></i></a>
+                    <div class="card-footer">
+                        <button class="btn-test" onclick="runTest(${tc.id})"><i class="fas fa-play me-1"></i>Test</button>
+                        <a href="${API_BASE}/test/${tc.sid}" target="_blank" class="btn-open"><i class="fas fa-external-link-alt"></i></a>
                     </div>
                 </div>
             `).join('');
         }
 
-        function showResults() { document.getElementById('resultsPanel').classList.add('show'); }
-        function toggleResults() { document.getElementById('resultsPanel').classList.toggle('show'); }
+        function showResults() { document.getElementById('results').classList.add('show'); }
+        function toggleResults() { document.getElementById('results').classList.toggle('show'); }
         function clearResults() { document.getElementById('resultsBody').innerHTML = ''; }
 
         async function runTest(id) {
@@ -213,32 +218,34 @@
             
             try {
                 const start = Date.now();
-                const res = await fetch(tc.endpoint);
+                const res = await fetch(`${API_BASE}/test/${tc.sid}`);
                 const ms = Date.now() - start;
                 document.getElementById(rid).innerHTML = `
-                    <div class="d-flex justify-content-between align-items-center mb-2">
+                    <div class="d-flex justify-content-between mb-2">
                         <strong><span class="badge bg-primary me-2">#${tc.id}</span>SID ${tc.sid}: ${tc.name}</strong>
                         <span class="badge bg-success">HTTP ${res.status} - ${ms}ms</span>
                     </div>
-                    <div class="small text-warning"><i class="fas fa-exclamation-triangle me-1"></i>Check NGFW Dashboard for SID <strong>${tc.sid}</strong></div>
+                    <small class="text-warning"><i class="fas fa-exclamation-triangle me-1"></i>Check NGFW Dashboard for SID <strong>${tc.sid}</strong></small>
                 `;
             } catch (e) {
                 document.getElementById(rid).className = 'result-item blocked';
                 document.getElementById(rid).innerHTML = `
-                    <strong><span class="badge bg-danger me-2">#${tc.id}</span>SID ${tc.sid} - BLOCKED/FAILED</strong>
-                    <div class="small text-success mt-1"><i class="fas fa-shield-alt me-1"></i>NGFW có thể đã chặn! Check logs với SID ${tc.sid}</div>
+                    <strong><span class="badge bg-danger me-2">#${tc.id}</span>SID ${tc.sid} - BLOCKED</strong>
+                    <div class="small text-success mt-1"><i class="fas fa-shield-alt me-1"></i>NGFW blocked! Check logs for SID ${tc.sid}</div>
                 `;
             }
         }
 
         async function runAllTests() {
-            if (!confirm('Run all 30 tests? This will trigger multiple security alerts.')) return;
-            showResults(); clearResults();
-            for (const tc of TEST_CASES) { await runTest(tc.id); await new Promise(r => setTimeout(r, 200)); }
+            if (!confirm('Run all 30 tests? This will trigger security alerts on your NGFW.')) return;
+            showResults();
+            clearResults();
+            for (const tc of TEST_CASES) {
+                await runTest(tc.id);
+                await new Promise(r => setTimeout(r, 300));
+            }
         }
 
-        BASE_URL = window.location.origin;
-        document.getElementById('baseUrl').textContent = BASE_URL;
         renderGrid();
     </script>
 </body>

@@ -9,7 +9,8 @@
   "scripts": {
     "start": "node index.js",
     "dev": "node --watch index.js",
-    "db:sync": "node -e \"require('./models').sequelize.sync({ force: false }).then(() => { console.log('DB synced'); process.exit(0); })\""
+    "db:sync": "node -e \"require('./models').sequelize.sync({ force: false }).then(() => { console.log('DB synced'); process.exit(0); })\"",
+    "ngfw:http": "NGFW_HTTP_PORT=80 node index.js"
   },
   "keywords": [],
   "author": "",
