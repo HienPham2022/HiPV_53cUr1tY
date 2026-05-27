@@ -65,11 +65,11 @@
                     <h1><i class="fas fa-shield-virus text-danger me-2"></i>NGFW Test Suite</h1>
                     <p class="mb-0 mt-2 text-secondary">
                         <span class="badge-http me-2">HTTP</span>
-                        HiPV_53cUr1tY — 30 Suricata rules (et-virus & et-malware)
+                        HiPV_53cUr1tY — 31 Suricata rules (et-virus & et-malware)
                     </p>
                 </div>
                 <button class="btn btn-success btn-lg" onclick="runAllTests()">
-                    <i class="fas fa-play me-2"></i>Run All 30 Tests
+                    <i class="fas fa-play me-2"></i>Run All 31 Tests
                 </button>
             </div>
         </div>
@@ -110,8 +110,8 @@
         </div>
 
         <div class="stats">
-            <div class="stat"><h3 class="text-primary">30</h3><p>Test Cases</p></div>
-            <div class="stat"><h3 class="text-danger">14</h3><p>MALWARE</p></div>
+            <div class="stat"><h3 class="text-primary">31</h3><p>Test Cases</p></div>
+            <div class="stat"><h3 class="text-danger">15</h3><p>MALWARE</p></div>
             <div class="stat"><h3 style="color:#f97316">11</h3><p>VIRUS</p></div>
             <div class="stat"><h3 style="color:#a855f7">3</h3><p>EXPLOIT-KIT</p></div>
             <div class="stat"><h3 class="text-info">2</h3><p>SANDBOX</p></div>
@@ -161,12 +161,21 @@
             { id: 23, sid: '6400013', name: 'Batch Replication', cat: 'VIRUS', severity: 'HIGH', rule: 'content:"copy"; content:"%0"' },
             { id: 24, sid: '6400020', name: 'Java Class File', cat: 'VIRUS', severity: 'HIGH', rule: 'content:"|CA FE BA BE|"' },
             { id: 25, sid: '6400021', name: 'PDF JavaScript', cat: 'VIRUS', severity: 'CRITICAL', rule: 'content:"/JS"; content:"/JavaScript"' },
-            { id: 26, sid: '6400026', name: 'SQLi SELECT', cat: 'WEB-ATTACK', severity: 'HIGH', rule: 'content:"SELECT"; content:"FROM"' },
-            { id: 27, sid: '6400027', name: 'SQLi UNION', cat: 'WEB-ATTACK', severity: 'HIGH', rule: 'content:"UNION"; content:"SELECT"' },
-            { id: 28, sid: '6400028', name: 'SQLi INSERT', cat: 'WEB-ATTACK', severity: 'HIGH', rule: 'content:"INSERT"; content:"INTO"' },
+            { id: 26, sid: '6400026', name: 'SQLi SELECT', cat: 'WEB-ATTACK', severity: 'HIGH',
+              rule: 'http.uri: /view_recent.asp? + currentpage= + SELECT + FROM',
+              triggerPath: '/ngfw-test/view_recent.asp?currentpage=1 UNION SELECT username,password FROM users' },
+            { id: 27, sid: '6400027', name: 'SQLi UNION', cat: 'WEB-ATTACK', severity: 'HIGH',
+              rule: 'http.uri: /view_recent.asp? + currentpage= + UNION + SELECT',
+              triggerPath: '/ngfw-test/view_recent.asp?currentpage=1 UNION SELECT * FROM admin WHERE 1=1' },
+            { id: 28, sid: '6400028', name: 'SQLi INSERT', cat: 'WEB-ATTACK', severity: 'HIGH',
+              rule: 'http.uri: /view_recent.asp? + currentpage= + INSERT + INTO',
+              triggerPath: '/ngfw-test/view_recent.asp?currentpage=1; INSERT INTO users VALUES (999,"hacker","owned")' },
             { id: 29, sid: '6400032', name: 'Java Exploit Kit', cat: 'EXPLOIT-KIT', severity: 'CRITICAL', rule: 'content:"PK"; content:"SunJCE.class"' },
             { id: 30, sid: '6400009', name: 'PE File Infector Pattern', cat: 'VIRUS', severity: 'CRITICAL',
-              rule: 'file_data; content:"MZ"; depth:2; content:"|E9|"; distance:58; within:3' }
+              rule: 'file_data; content:"MZ"; depth:2; content:"|E9|"; distance:58; within:3' },
+            { id: 31, sid: '5915100', name: 'NetSupport Malware PS1', cat: 'MALWARE', severity: 'CRITICAL',
+              rule: 'POST UA:"NetSupport Manager/1.3" + CMD=&CLIENT_ADDR=&PORT=&MACADDRESS= (download: .ps1 sample)',
+              triggerPath: '/ngfw-test/test/5915100' }
         ];
 
         function getCatClass(cat) {
@@ -177,6 +186,14 @@
         function getSevClass(sev) {
             const map = { 'CRITICAL': 'severity-critical', 'HIGH': 'severity-high', 'MEDIUM': 'severity-medium' };
             return map[sev] || 'bg-secondary';
+        }
+
+        function getTriggerUrl(tc) {
+            if (tc.triggerPath) {
+                // triggerPath đã chứa /ngfw-test/ prefix
+                return window.location.origin + tc.triggerPath;
+            }
+            return API_BASE + `/test/${tc.sid}`;
         }
 
         function renderGrid() {
@@ -193,12 +210,12 @@
                     </div>
                     <div class="card-body">
                         <span class="severity ${getSevClass(tc.severity)}">${tc.severity}</span>
-                        <div class="endpoint-url">${API_BASE}/test/${tc.sid}</div>
+                        <div class="endpoint-url">${getTriggerUrl(tc)}</div>
                         <small class="text-secondary"><code>${tc.rule}</code></small>
                     </div>
                     <div class="card-footer">
                         <button class="btn-test" onclick="runTest(${tc.id})"><i class="fas fa-play me-1"></i>Test</button>
-                        <a href="${API_BASE}/test/${tc.sid}" target="_blank" class="btn-open"><i class="fas fa-external-link-alt"></i></a>
+                        <a href="${getTriggerUrl(tc)}" target="_blank" class="btn-open"><i class="fas fa-external-link-alt"></i></a>
                     </div>
                 </div>
             `).join('');
@@ -218,7 +235,7 @@
             
             try {
                 const start = Date.now();
-                const res = await fetch(`${API_BASE}/test/${tc.sid}`);
+                const res = await fetch(getTriggerUrl(tc));
                 const ms = Date.now() - start;
                 document.getElementById(rid).innerHTML = `
                     <div class="d-flex justify-content-between mb-2">
@@ -237,7 +254,7 @@
         }
 
         async function runAllTests() {
-            if (!confirm('Run all 30 tests? This will trigger security alerts on your NGFW.')) return;
+            if (!confirm('Run all 31 tests? This will trigger security alerts on your NGFW.')) return;
             showResults();
             clearResults();
             for (const tc of TEST_CASES) {

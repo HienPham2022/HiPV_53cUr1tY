@@ -78,7 +78,7 @@ npm run db:sync
 
 ## NGFW Test Suite
 
-Test tính năng phát hiện malware của Next Generation Firewall với **30 test cases** từ các file Suricata rules thực tế:
+Test tính năng phát hiện malware của Next Generation Firewall với **31 test cases** từ các file Suricata rules thực tế:
 - `et-virus_protection.rules`
 - `et-malware_protection.rules.txt`
 
@@ -103,6 +103,7 @@ https://your-app-name.onrender.com/ngfw-test/
 | 26-28 | 6400026-6400028 | WEB-ATTACK | SQL Injection |
 | 29 | 6400032 | EXPLOIT-KIT | Cool Java Exploit Kit |
 | 30 | 6400009 | VIRUS | PE File Infector Pattern (MZ + E9) |
+| 31 | 5915100 | MALWARE | NetSupport RAT — PS1 dropper sample download |
 
 ### HTTP plaintext (Suricata)
 

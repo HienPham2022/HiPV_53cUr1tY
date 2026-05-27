@@ -1,7 +1,11 @@
 'use strict';
 
+const fs = require('fs');
+const path = require('path');
 const express = require('express');
 const router = express.Router();
+
+const NETSUPPORT_PS1 = path.join(__dirname, '../securityPuplic/ngfw-test/samples/netsupport.ps1');
 
 const EICAR_STRING = 'X5O!P%@AP[4\\PZX54(P^)7CC)7}$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*';
 
@@ -35,7 +39,8 @@ const TEST_CASES = [
     { id: 27, sid: '6400027', name: 'SQL Injection UNION SELECT', cat: 'WEB-ATTACK', severity: 'HIGH' },
     { id: 28, sid: '6400028', name: 'SQL Injection INSERT', cat: 'WEB-ATTACK', severity: 'HIGH' },
     { id: 29, sid: '6400032', name: 'Cool Java Exploit Kit', cat: 'EXPLOIT-KIT', severity: 'CRITICAL' },
-    { id: 30, sid: '6400009', name: 'PE File Infector Pattern', cat: 'VIRUS', severity: 'CRITICAL' }
+    { id: 30, sid: '6400009', name: 'PE File Infector Pattern', cat: 'VIRUS', severity: 'CRITICAL' },
+    { id: 31, sid: '5915100', name: 'NetSupport Malware PS1', cat: 'MALWARE', severity: 'CRITICAL' }
 ];
 
 router.get('/api/test-cases', (req, res) => {
@@ -176,19 +181,41 @@ router.get('/test/6400021', (req, res) => {
     res.send('%PDF-1.4\n/JS (app.alert("Hacked!"))\n/JavaScript /S /JavaScript\n%%EOF');
 });
 
-router.get('/test/6400026', (req, res) => {
-    res.set({ 'Content-Type': 'text/plain', 'X-Test-SID': '6400026' });
-    res.send('SQL Query: /view_recent.asp?currentpage=1 UNION SELECT username, password FROM users');
+/**
+ * SQLi rules (6400026–6400028) match http.uri on the REQUEST, not response body.
+ * 
+ * Rule 6400027 example:
+ *   http.uri; content:"/view_recent.asp?"; nocase; content:"currentpage="; nocase;
+ *   content:"UNION"; nocase; content:"SELECT"; nocase; distance:0;
+ * 
+ * URI phải chứa: /view_recent.asp? + currentpage= + UNION + SELECT (theo thứ tự)
+ */
+const SQLI_PAYLOADS = {
+    '6400026': 'currentpage=1 UNION SELECT username,password FROM users',
+    '6400027': 'currentpage=1 UNION SELECT * FROM admin WHERE 1=1',
+    '6400028': 'currentpage=1; INSERT INTO users VALUES (999,"hacker","owned")'
+};
+
+router.get('/view_recent.asp', (req, res) => {
+    res.set({ 'Content-Type': 'text/plain', 'X-Test-URI': req.originalUrl });
+    res.send(
+        '=== Suricata Rule Match Test ===\n\n' +
+        'Suricata kiểm tra http.uri trên REQUEST (client → server).\n' +
+        `Full URI được gửi: ${req.originalUrl}\n\n` +
+        'Nếu OPNsense không alert:\n' +
+        '1. Kiểm tra $HTTP_SERVERS có chứa IP server test\n' +
+        '2. Dùng HTTP plaintext (port 80), không HTTPS\n' +
+        '3. Bật ET virus/web rules trong ruleset\n' +
+        '4. Interface Suricata đúng (WAN/LAN tùy traffic flow)'
+    );
 });
 
-router.get('/test/6400027', (req, res) => {
-    res.set({ 'Content-Type': 'text/plain', 'X-Test-SID': '6400027' });
-    res.send('Payload: currentpage=1 UNION SELECT * FROM admin WHERE 1=1');
-});
-
-router.get('/test/6400028', (req, res) => {
-    res.set({ 'Content-Type': 'text/plain', 'X-Test-SID': '6400028' });
-    res.send('Payload: currentpage=1; INSERT INTO users VALUES (999, "hacker", "owned")');
+['6400026', '6400027', '6400028'].forEach((sid) => {
+    router.get(`/test/${sid}`, (req, res) => {
+        // Redirect relative từ /ngfw-test/test/xxx đến /ngfw-test/view_recent.asp?...
+        const targetUri = `../view_recent.asp?${SQLI_PAYLOADS[sid]}`;
+        res.redirect(302, targetUri);
+    });
 });
 
 router.get('/test/6400032', (req, res) => {
@@ -213,6 +240,27 @@ router.get('/test/6400009', (req, res) => {
 router.get('/eicar.com', (req, res) => {
     res.set({ 'Content-Type': 'application/octet-stream', 'Content-Disposition': 'attachment; filename="eicar.com"' });
     res.send(EICAR_STRING);
+});
+
+/** NetSupport RAT sample — real PS1 dropper (~10MB). SID 5915100 = NetSupport CnC POST rule. */
+router.get('/test/5915100', (req, res) => {
+    if (!fs.existsSync(NETSUPPORT_PS1)) {
+        return res.status(404).type('text/plain').send('Sample not found: securityPuplic/ngfw-test/samples/netsupport.ps1');
+    }
+    res.set({
+        'Content-Type': 'application/octet-stream',
+        'Content-Disposition': 'attachment; filename="netsupport.ps1"',
+        'X-Test-SID': '5915100'
+    });
+    fs.createReadStream(NETSUPPORT_PS1).pipe(res);
+});
+
+router.post('/test/5915100', (req, res) => {
+    res.set('X-Test-SID', '5915100');
+    res.type('text/plain').send(
+        'NetSupport CnC beacon received.\n' +
+        'Suricata SID 5915100 matches POST with User-Agent "NetSupport Manager/1.3" and body CMD=&CLIENT_ADDR=&PORT=&MACADDRESS='
+    );
 });
 
 module.exports = router;
