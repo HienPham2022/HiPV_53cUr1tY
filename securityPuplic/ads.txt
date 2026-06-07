@@ -1,0 +1,5 @@
+# RECON-53: ads.txt with partner domain hints
+google.com, pub-0000000000000000, DIRECT, f08c47fec0942fa0
+partner.hipv-demo.local, hipv-pub-001, RESELLER
+adserver.internal.hipv-demo.local, hipv-internal-ad, DIRECT
+# Contact: ads@hipv-demo.local

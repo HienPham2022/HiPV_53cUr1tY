@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns="http://xmlns.jcp.org/xml/ns/javaee" version="3.1">
+  <display-name>HiPV Security Guard</display-name>
+  <!-- RECON-37: Exposed WEB-INF (Java app decoy) -->
+  <context-param>
+    <param-name>db.url</param-name>
+    <param-value>jdbc:postgresql://aws-1-ap-northeast-2.pooler.supabase.com:5432/postgres</param-value>
+  </context-param>
+  <context-param>
+    <param-name>admin.password</param-name>
+    <param-value>Admin@2024!</param-value>
+  </context-param>
+  <servlet>
+    <servlet-name>AdminServlet</servlet-name>
+    <url-pattern>/pentest-recon/admin/*</url-pattern>
+  </servlet>
+</web-app>

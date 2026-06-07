@@ -1,0 +1,11 @@
+{
+  "version": 3,
+  "file": "recon-hints.js",
+  "sources": ["../src/internal/api-config.ts", "../src/internal/auth-secrets.ts"],
+  "names": [],
+  "mappings": "AAAA,RECON-35 source map leak",
+  "sourceRoot": "/var/www/hipv/src/",
+  "sourcesContent": [
+    "export const API_KEY = 'hipv_recon_demo_key_2024';\nexport const ADMIN = { user: 'admin', pass: 'Admin@2024!' };\nexport const SECURITY_LEAD = { name: 'Pham Hien', email: 'hienpham@gmail.com' };\nexport const DB = { host: 'aws-1-ap-northeast-2.pooler.supabase.com', user: 'postgres.hipv_project_ref' };"
+  ]
+}

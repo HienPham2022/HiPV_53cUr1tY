@@ -1,0 +1,15 @@
+/* TEAM */
+Security Lead: Pham Hien — hienpham@gmail.com
+Dev Lead: Le Van Dev — dev@hipv-demo.local
+Security: Nguyen Van Admin — admin@hipv-demo.local
+Ops: Tran Thi Ops — ops@hipv-demo.local
+HR: Pham Thi HR — hr@hipv-demo.local
+
+/* SITE */
+Last update: 2024-11-15
+Staging: staging.hipv-demo.local → /pentest-recon/staging/
+API: api.hipv-demo.local → /api/docs
+Admin vhost: admin.hipv-demo.local
+
+/* THANKS */
+Kali Linux, OWASP, PTES methodology

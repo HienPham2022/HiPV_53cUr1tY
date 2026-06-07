@@ -1,0 +1,4 @@
+# DNT Policy — HiPV
+contact: security@hipv-demo.local
+effective: 2024-11-15
+policy: /pentest-recon/internal/security-policy.html

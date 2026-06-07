@@ -2,16 +2,20 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url><loc>http://localhost:5555/</loc><priority>1.0</priority></url>
   <url><loc>http://localhost:5555/users/login</loc><priority>0.8</priority></url>
-  <url><loc>http://localhost:5555/users/register</loc><priority>0.8</priority></url>
-  <url><loc>http://localhost:5555/single</loc><priority>0.7</priority></url>
   <url><loc>http://localhost:5555/ngfw-test/</loc><priority>0.6</priority></url>
-  <!-- Hidden / internal paths (should not be in sitemap — recon target) -->
+  <url><loc>http://localhost:5555/pentest-recon/</loc><priority>0.5</priority></url>
   <url><loc>http://localhost:5555/pentest-recon/admin/</loc><priority>0.3</priority></url>
-  <url><loc>http://localhost:5555/pentest-recon/backup/</loc><priority>0.3</priority></url>
+  <url><loc>http://localhost:5555/pentest-recon/backup/database.sql.bak</loc><priority>0.3</priority></url>
   <url><loc>http://localhost:5555/pentest-recon/internal/staff-directory.html</loc><priority>0.3</priority></url>
-  <url><loc>http://localhost:5555/pentest-recon/staging/</loc><priority>0.3</priority></url>
-  <url><loc>http://localhost:5555/pentest-recon/dev/notes.txt</loc><priority>0.2</priority></url>
+  <url><loc>http://localhost:5555/pentest-recon/secrets/ftp-credentials.txt</loc><priority>0.2</priority></url>
+  <url><loc>http://localhost:5555/pentest-recon/dns/dns-records.txt</loc><priority>0.2</priority></url>
   <url><loc>http://localhost:5555/api/docs</loc><priority>0.2</priority></url>
   <url><loc>http://localhost:5555/api/debug</loc><priority>0.1</priority></url>
+  <url><loc>http://localhost:5555/actuator/env</loc><priority>0.1</priority></url>
+  <url><loc>http://localhost:5555/graphql</loc><priority>0.1</priority></url>
+  <url><loc>http://localhost:5555/metrics</loc><priority>0.1</priority></url>
   <url><loc>http://localhost:5555/.git/HEAD</loc><priority>0.1</priority></url>
+  <url><loc>http://localhost:5555/.svn/entries</loc><priority>0.1</priority></url>
+  <url><loc>http://localhost:5555/docker-compose.yml</loc><priority>0.1</priority></url>
+  <url><loc>http://localhost:5555/WEB-INF/web.xml</loc><priority>0.1</priority></url>
 </urlset>

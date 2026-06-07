@@ -1,0 +1,11 @@
+/* RECON-36: CSS comment information disclosure */
+/* Admin panel: /pentest-recon/admin/ */
+/* API debug: /api/debug */
+/* Backup cron downloads from /pentest-recon/backup/database.sql.bak */
+/* Default login: admin / Admin@2024! */
+/* Internal API key: hipv_recon_demo_key_2024 */
+/* Staging vhost: staging.hipv-demo.local */
+/* OSINT contact: hienpham@gmail.com (Pham Hien — Security Lead) */
+/* Profile page: /pentest-recon/osint/hien-pham-profile.html */
+
+.hipv-hidden { display: none; }

@@ -33,12 +33,12 @@ if (pentestReconEnabled) {
 // Static folder
 app.use(express.static(`${__dirname}/securityPuplic`));
 
-// RECON-12: Exposed .git repository (intentional — pentest lab only)
+// RECON-12/20/21: Exposed VCS metadata (pentest lab only)
 if (pentestReconEnabled) {
-    app.use('/.git', express.static(path.join(__dirname, 'securityPuplic', '.git-pentest'), {
-        dotfiles: 'allow',
-        index: false
-    }));
+    const staticVcs = { dotfiles: 'allow', index: false };
+    app.use('/.git', express.static(path.join(__dirname, 'securityPuplic', '.git-pentest'), staticVcs));
+    app.use('/.svn', express.static(path.join(__dirname, 'securityPuplic', '.svn-pentest'), staticVcs));
+    app.use('/.hg', express.static(path.join(__dirname, 'securityPuplic', '.hg-pentest'), staticVcs));
 }
 
 // Handlebars engine
@@ -131,8 +131,8 @@ sequelize.authenticate()
             console.log(`NGFW Test UI: http://localhost:${port}/ngfw-test/`);
             if (pentestReconEnabled) {
                 console.log(`Pentest Recon Lab: http://localhost:${port}/pentest-recon/`);
-                console.log(`  robots.txt: http://localhost:${port}/robots.txt`);
-                console.log(`  API docs:   http://localhost:${port}/api/docs`);
+                console.log(`  Manifest (55 findings): http://localhost:${port}/pentest-recon/manifest.json`);
+                console.log(`  Wordlist: http://localhost:${port}/pentest-recon/wordlist.txt`);
             }
             startNgfwHttpServer();
         });

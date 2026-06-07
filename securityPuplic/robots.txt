@@ -1,22 +1,37 @@
-# HiPV Security Guard — robots.txt (INTENTIONALLY LEAKY FOR PENTEST LAB)
-# Last updated: 2024-11-15 by dev-team
+# HiPV Security Guard — robots.txt (PENTEST LAB — intentionally leaky)
+# Last updated: 2024-11-15
 
 User-agent: *
 Disallow: /pentest-recon/admin/
 Disallow: /pentest-recon/backup/
 Disallow: /pentest-recon/internal/
 Disallow: /pentest-recon/private/
+Disallow: /pentest-recon/secrets/
 Disallow: /pentest-recon/staging/
 Disallow: /pentest-recon/dev/
 Disallow: /api/debug
 Disallow: /api/users/check
+Disallow: /actuator/
 Disallow: /createUser
 Disallow: /.git/
+Disallow: /.svn/
+Disallow: /.hg/
 Disallow: /config.json
+Disallow: /docker-compose.yml
+Disallow: /WEB-INF/
+Disallow: /manager/
+Disallow: /elmah.axd
+Disallow: /trace.axd
 Allow: /pentest-recon/uploads/
 
-# Sitemap
 Sitemap: http://localhost:5555/sitemap.xml
+Sitemap: http://localhost:5555/sitemap_index.xml
 
-# Internal note (remove before prod):
-# Staging: /pentest-recon/staging/ | phpMyAdmin honeypot: /pentest-recon/phpmyadmin/
+# Internal notes (recon bait):
+# staging.hipv-demo.local → /pentest-recon/staging/
+# api.hipv-demo.local → /api/docs
+# admin.hipv-demo.local → /pentest-recon/admin/
+# DNS records: /pentest-recon/dns/dns-records.txt
+# Manifest (all findings): /pentest-recon/manifest.json
+# OSINT emails: /pentest-recon/contacts/osint-emails.txt
+# Personal contact: hienpham@gmail.com — /pentest-recon/osint/hien-pham-profile.html

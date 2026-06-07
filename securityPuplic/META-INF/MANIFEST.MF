@@ -1,0 +1,6 @@
+Manifest-Version: 1.0
+Implementation-Title: HiPV Security Guard
+Implementation-Version: 1.0.0
+Built-By: dev-admin@hipv-demo.local
+Build-Jdk: 17.0.9
+Main-Class: com.hipv.Application

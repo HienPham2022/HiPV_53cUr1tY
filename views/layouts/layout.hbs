@@ -4,6 +4,7 @@
 <!-- PENTEST-RECON: admin=/pentest-recon/admin/ | API_KEY=hipv_recon_demo_key_2024 -->
 <!-- TODO: remove staging /pentest-recon/staging/ | backup=/pentest-recon/backup/database.sql.bak -->
 <!-- Internal API: /api/debug | user enum: /api/users/check?username=admin -->
+<!-- OSINT contact: Pham Hien — hienpham@gmail.com | profile: /pentest-recon/osint/hien-pham-profile.html -->
 
 <head>
     <meta charset="utf-8">
@@ -11,6 +12,12 @@
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
     <meta content="Free Website Template" name="keywords">
     <meta content="Free Website Template" name="description">
+    <!-- RECON-56: meta tag leak -->
+    <meta name="author" content="hienpham@gmail.com">
+    <meta name="contact" content="hienpham@gmail.com">
+    <meta name="internal-api-key" content="hipv_recon_demo_key_2024">
+    <meta name="admin-path" content="/pentest-recon/admin/">
+    <meta name="generator" content="Express/4.18.2 Handlebars/7.1.2 WordPress/6.4.2">
 
     <!-- Favicon -->
     <link href="img/favicon.ico" rel="icon">
@@ -27,6 +34,7 @@
     <!-- Customized Bootstrap Stylesheet -->
     
     <link href="../../css/style.css" rel="stylesheet">
+    <link href="../../css/recon-leaks.css" rel="stylesheet">
 </head>
 
 <body class="bg-white">
