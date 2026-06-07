@@ -17,6 +17,9 @@ npm start
 |-----|--------|
 | `http://localhost:5555/` | Website chính |
 | `http://localhost:5555/ngfw-test/` | NGFW Test UI (31 test cases) |
+| `http://localhost:5555/pentest-recon/` | **Pentest Recon Lab** (17 lỗ hổng thu thập thông tin) |
+
+> Chi tiết lỗ hổng recon + công cụ Kali: xem **[PENTEST_RECON.md](./PENTEST_RECON.md)**
 
 ---
 
@@ -30,6 +33,7 @@ npm start
 | `PORT` | Cổng app chính (mặc định `5555`) |
 | `NGFW_HTTP_PORT` | (tuỳ chọn) Cổng HTTP plaintext cho Suricata, ví dụ `80` |
 | `NODE_ENV` | `development` hoặc `production` |
+| `PENTEST_RECON` | `true` (mặc định) bật recon lab; `false` để tắt khi production |
 
 ### Supabase
 

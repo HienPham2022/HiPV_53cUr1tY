@@ -2,6 +2,7 @@
 
 require('dotenv').config();
 
+const path = require('path');
 const express = require('express');
 const helmet = require('helmet');
 const session = require('express-session');
@@ -12,12 +13,33 @@ const sessionMiddleware = require('./middlewares/sessionMiddleware');
 
 const app = express();
 const port = process.env.PORT || 5555;
+const pentestReconEnabled = process.env.PENTEST_RECON !== 'false';
 
-// Security headers
-app.use(helmet({ contentSecurityPolicy: false }));
+// Security headers (relaxed for pentest recon lab)
+app.use(helmet({
+    contentSecurityPolicy: false,
+    hidePoweredBy: !pentestReconEnabled
+}));
+
+// RECON-05: Global verbose headers when pentest lab is enabled
+if (pentestReconEnabled) {
+    app.use((req, res, next) => {
+        res.setHeader('X-Application', 'hipv_53cur1ty/1.0.0');
+        res.setHeader('X-Pentest-Lab', 'recon-enabled');
+        next();
+    });
+}
 
 // Static folder
 app.use(express.static(`${__dirname}/securityPuplic`));
+
+// RECON-12: Exposed .git repository (intentional — pentest lab only)
+if (pentestReconEnabled) {
+    app.use('/.git', express.static(path.join(__dirname, 'securityPuplic', '.git-pentest'), {
+        dotfiles: 'allow',
+        index: false
+    }));
+}
 
 // Handlebars engine
 const hbs = engineHandleBars.create({
@@ -60,6 +82,11 @@ app.use(session({
 
 app.use(sessionMiddleware);
 
+// Pentest Recon routes (information gathering lab)
+if (pentestReconEnabled) {
+    app.use('/', require('./routes/reconRouter'));
+}
+
 // Routes
 app.use('/', require('./routes/indexRouter'));
 app.use('/single', require('./routes/commentsRouter'));
@@ -78,7 +105,6 @@ app.use((err, req, res, next) => {
 });
 
 // Start server after DB check
-const path = require('path');
 const { sequelize } = require('./models');
 const { getSequelizeOptions } = require('./config/database');
 
@@ -103,6 +129,11 @@ sequelize.authenticate()
         app.listen(port, () => {
             console.log(`Server is listening on port ${port}`);
             console.log(`NGFW Test UI: http://localhost:${port}/ngfw-test/`);
+            if (pentestReconEnabled) {
+                console.log(`Pentest Recon Lab: http://localhost:${port}/pentest-recon/`);
+                console.log(`  robots.txt: http://localhost:${port}/robots.txt`);
+                console.log(`  API docs:   http://localhost:${port}/api/docs`);
+            }
             startNgfwHttpServer();
         });
     })

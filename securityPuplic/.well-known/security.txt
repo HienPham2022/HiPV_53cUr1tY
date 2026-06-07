@@ -1,0 +1,10 @@
+Contact: security@hipv-demo.local
+Expires: 2027-12-31T23:59:59.000Z
+Preferred-Languages: en, vi
+Canonical: http://localhost:5555/.well-known/security.txt
+Policy: http://localhost:5555/pentest-recon/internal/security-policy.html
+
+# HiPV Pentest Lab — intentional disclosure for recon training
+# Report bugs to: security@hipv-demo.local
+# Internal wiki: /pentest-recon/internal/
+# API documentation: /api/docs

@@ -1,5 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
+<!-- RECON-07: HTML source comment leak — remove before production -->
+<!-- PENTEST-RECON: admin=/pentest-recon/admin/ | API_KEY=hipv_recon_demo_key_2024 -->
+<!-- TODO: remove staging /pentest-recon/staging/ | backup=/pentest-recon/backup/database.sql.bak -->
+<!-- Internal API: /api/debug | user enum: /api/users/check?username=admin -->
 
 <head>
     <meta charset="utf-8">
@@ -181,6 +185,8 @@
     <!-- Template Javascript -->
     <script src="js/main.js"></script>
     <script src="js/script.js"></script>
+    <!-- RECON-16: client-side JS with hidden endpoints -->
+    <script src="js/recon-hints.js"></script>
 </body>
 
 </html>

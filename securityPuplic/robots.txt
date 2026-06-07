@@ -1,0 +1,22 @@
+# HiPV Security Guard — robots.txt (INTENTIONALLY LEAKY FOR PENTEST LAB)
+# Last updated: 2024-11-15 by dev-team
+
+User-agent: *
+Disallow: /pentest-recon/admin/
+Disallow: /pentest-recon/backup/
+Disallow: /pentest-recon/internal/
+Disallow: /pentest-recon/private/
+Disallow: /pentest-recon/staging/
+Disallow: /pentest-recon/dev/
+Disallow: /api/debug
+Disallow: /api/users/check
+Disallow: /createUser
+Disallow: /.git/
+Disallow: /config.json
+Allow: /pentest-recon/uploads/
+
+# Sitemap
+Sitemap: http://localhost:5555/sitemap.xml
+
+# Internal note (remove before prod):
+# Staging: /pentest-recon/staging/ | phpMyAdmin honeypot: /pentest-recon/phpmyadmin/
