@@ -17,7 +17,10 @@ npm start
 |-----|--------|
 | `http://localhost:5555/` | Website chính |
 | `http://localhost:5555/ngfw-test/` | NGFW Test UI (31 test cases) |
-| `http://localhost:5555/pentest-recon/` | **Pentest Recon Lab v2** (56 lỗ hổng recon) |
+| `http://localhost:5555/pentest-recon/` | **Pentest Recon Lab v3** (Business Security Snapshot) |
+| `http://localhost:5555/api/snapshot` | **Full report JSON** — 6 categories, grade B- |
+| `http://localhost:5555/pentest-recon/snapshot/dashboard.html` | Dashboard preview |
+| `http://localhost:5555/pentest-recon/data-leakage/index.json` | Data Leakage — 12 leaks |
 | `http://localhost:5555/pentest-recon/manifest.json` | Ground truth cho auto pentest tool |
 
 > Chi tiết lỗ hổng recon + công cụ Kali: xem **[PENTEST_RECON.md](./PENTEST_RECON.md)**

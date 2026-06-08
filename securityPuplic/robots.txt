@@ -7,6 +7,8 @@ Disallow: /pentest-recon/backup/
 Disallow: /pentest-recon/internal/
 Disallow: /pentest-recon/private/
 Disallow: /pentest-recon/secrets/
+Disallow: /pentest-recon/data-leakage/
+Disallow: /pentest-recon/snapshot/
 Disallow: /pentest-recon/staging/
 Disallow: /pentest-recon/dev/
 Disallow: /api/debug

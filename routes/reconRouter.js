@@ -482,6 +482,64 @@ router.all('/webdav', (req, res) => {
     res.json({ webdav: true, methods: ['PROPFIND', 'GET', 'PUT'], path: '/webdav' });
 });
 
+/** Business Security Snapshot — full report API (dashboard ground truth) */
+router.get('/api/snapshot', (req, res) => {
+    res.sendFile(path.join(RECON_ROOT, 'snapshot', 'report.json'));
+});
+
+router.get('/pentest-recon/snapshot/report.json', (req, res) => {
+    res.sendFile(path.join(RECON_ROOT, 'snapshot', 'report.json'));
+});
+
+router.get('/api/public/endpoints.json', (req, res) => {
+    res.json({
+        unauthenticated_endpoints: 12,
+        endpoints: [
+            { method: 'GET', path: '/api/health', risk: 'low' },
+            { method: 'GET', path: '/api/debug', risk: 'high' },
+            { method: 'GET', path: '/api/swagger.json', risk: 'moderate' },
+            { method: 'GET', path: '/api/v1/users', risk: 'high' },
+            { method: 'GET', path: '/api/v1/config', risk: 'high' },
+            { method: 'GET', path: '/api/users/check', risk: 'moderate' },
+            { method: 'GET', path: '/api/users/check-email', risk: 'moderate' },
+            { method: 'GET', path: '/actuator/env', risk: 'high' },
+            { method: 'GET', path: '/graphql', risk: 'moderate' },
+            { method: 'GET', path: '/metrics', risk: 'low' },
+            { method: 'GET', path: '/api/snapshot', risk: 'low' },
+            { method: 'GET', path: '/pentest-recon/data-leakage/index.json', risk: 'high' }
+        ]
+    });
+});
+
+/** Category JSON shortcuts */
+router.get('/pentest-recon/data-leakage/index.json', (req, res) => {
+    res.sendFile(path.join(RECON_ROOT, 'data-leakage', 'index.json'));
+});
+
+/** COMP-01: Missing privacy policy (intentional 404) */
+router.get('/privacy', (req, res) => {
+    res.status(404).json({
+        error: 'Privacy policy not found',
+        compliance_gap: 'COMP-01',
+        gdpr_article: 'Art. 13',
+        draft_url: '/pentest-recon/compliance/data-retention.txt',
+        dpo_contact: 'hienpham@gmail.com'
+    });
+});
+
+router.get('/terms', (req, res) => {
+    res.status(404).json({ error: 'Terms of service not found', compliance_gap: 'COMP-07' });
+});
+
+router.get('/api/gdpr/delete-request', (req, res) => {
+    res.status(404).json({
+        error: 'GDPR erasure endpoint not implemented',
+        compliance_gap: 'COMP-09',
+        gdpr_article: 'Art. 17',
+        contact: 'hienpham@gmail.com'
+    });
+});
+
 /** Manifest for tool evaluation */
 router.get('/pentest-recon/manifest.json', (req, res) => {
     res.sendFile(path.join(RECON_ROOT, 'manifest.json'));
